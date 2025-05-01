@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, AlertCircle, ArrowRight, RefreshCw, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Loader2, AlertCircle, ArrowRight, RefreshCw, ThumbsUp, ThumbsDown, Trash2, ChevronLeft } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -18,20 +18,35 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ChevronDown } from "lucide-react"
 import { useSupabase } from "@/lib/use-supabase"
 
+// Update the props interface to include variants
 interface AINotificationGeneratorProps {
-  onSelectNotification: (notification: { title: string; subtitle: string; body: string }) => void
+  onSelectNotification: (notification: { title: string; subtitle: string; body: string }, variantId?: string) => void
   onClose: () => void
   existingNotification?: {
     title: string
     subtitle: string
     message: string
   }
+  variants?: Array<{
+    id: string
+    title: string
+    subtitle: string
+    message: string
+    image: string
+    url: string
+  }>
+  activeVariant?: string
+  onDeleteVariant?: (variantId: string) => void
 }
 
+// Update the component to handle variants
 export function AINotificationGenerator({
   onSelectNotification,
   onClose,
   existingNotification,
+  variants,
+  activeVariant,
+  onDeleteVariant,
 }: AINotificationGeneratorProps) {
   const router = useRouter()
 
@@ -72,6 +87,15 @@ export function AINotificationGenerator({
     includeEmoji: true,
   })
 
+  // Add a new state for the variant being edited
+  const [editingVariant, setEditingVariant] = useState<string | null>(null)
+
+  // Add a state to track if we're in variants view mode
+  const [showVariantsView, setShowVariantsView] = useState(false)
+
+  // Add a new tab for variants if they exist
+  const hasVariants = variants && variants.length > 1
+
   // Check if we have existing notification content
   useEffect(() => {
     if (existingNotification) {
@@ -93,7 +117,12 @@ export function AINotificationGenerator({
         generateNotificationsFromExisting()
       }
     }
-  }, [existingNotification])
+
+    // If we have variants, show the variants view by default
+    if (hasVariants) {
+      setShowVariantsView(true)
+    }
+  }, [existingNotification, hasVariants])
 
   const handlePromptChange = (field: keyof GenerationPrompt, value: any) => {
     setPrompt((prev) => {
@@ -176,6 +205,11 @@ export function AINotificationGenerator({
       // If we're already on step 2, don't change the step
       if (currentStep !== 2) {
         setCurrentStep(2)
+      }
+
+      // When generating notifications for a variant, we want to hide the variants view
+      if (editingVariant) {
+        setShowVariantsView(false)
       }
     } catch (error) {
       console.error("Error generating notifications:", error)
@@ -266,6 +300,9 @@ export function AINotificationGenerator({
 
       // Move to the next step
       setCurrentStep(2)
+
+      // Hide variants view when generating new notifications
+      setShowVariantsView(false)
     } catch (error) {
       console.error("Error generating notifications:", error)
       setError(error instanceof Error ? error.message : "Failed to generate notifications")
@@ -423,13 +460,19 @@ export function AINotificationGenerator({
     }
   }
 
+  // Update the handleSelectNotification function to pass the variant ID
   const handleSelectOption = () => {
     if (selectedOption === null) return
 
     const selected = generatedOptions[selectedOption]
 
-    // If no A/B testing, just redirect with the selected notification
-    if (!abTestVariants) {
+    // If editing a specific variant, pass that variant ID
+    if (editingVariant) {
+      onSelectNotification(selected, editingVariant)
+      setEditingVariant(null)
+      setShowVariantsView(true)
+    } else if (!abTestVariants) {
+      // If no A/B testing, just redirect with the selected notification
       redirectWithVariants([selected])
     } else {
       // Generate the requested number of variants
@@ -465,12 +508,21 @@ export function AINotificationGenerator({
   const [finalSubtitle, setFinalSubtitle] = useState("")
   const [finalBody, setFinalBody] = useState("")
 
+  // Update the handleFinalSelection function to pass the variant ID
   const handleFinalSelection = () => {
     // Create the notification object
     const notification = {
       title: finalTitle,
       subtitle: finalSubtitle || "",
       body: finalBody,
+    }
+
+    // If editing a specific variant, pass that variant ID
+    if (editingVariant) {
+      onSelectNotification(notification, editingVariant)
+      setEditingVariant(null)
+      setShowVariantsView(true)
+      return
     }
 
     // Option 1: Use the callback to pass data to parent component
@@ -504,6 +556,23 @@ export function AINotificationGenerator({
     router.push(`/push/create?${params.toString()}`)
   }
 
+  // Handle variant deletion
+  const handleDeleteVariant = (variantId: string) => {
+    if (onDeleteVariant) {
+      onDeleteVariant(variantId)
+    }
+  }
+
+  // Find the current variant being edited
+  const currentEditingVariant = variants?.find((variant) => variant.id === editingVariant)
+
+  // Handle back button click - return to variants view
+  const handleBackToVariants = () => {
+    setEditingVariant(null)
+    setShowVariantsView(true)
+    setCurrentStep(1) // Reset to step 1 to show the variants list
+  }
+
   return (
     <div className="space-y-6">
       {error && (
@@ -519,12 +588,125 @@ export function AINotificationGenerator({
         </Alert>
       )}
 
-      {/* Step 1: Input */}
-      {currentStep === 1 && (
+      {/* Show back button when editing a variant */}
+      {editingVariant && (
+        <button onClick={handleBackToVariants} className="flex items-center text-indigo-600 hover:text-indigo-800 mb-4">
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Back to test variant list
+        </button>
+      )}
+
+      {/* Show only the current variant being edited */}
+      {editingVariant && currentEditingVariant && (
+        <div className="border-2 border-indigo-500 rounded-lg p-4 mb-6 bg-indigo-50 bg-opacity-30">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-medium">
+              Editing{" "}
+              {editingVariant === "variant-a"
+                ? "Variant A"
+                : editingVariant === "variant-b"
+                  ? "Variant B"
+                  : `Variant ${editingVariant.split("-")[1].toUpperCase()}`}
+            </h4>
+            <Badge className="bg-indigo-600">Current</Badge>
+          </div>
+          <div className="space-y-2">
+            <div>
+              <span className="font-medium">Title: </span>
+              <span>{currentEditingVariant.title}</span>
+            </div>
+            {currentEditingVariant.subtitle && (
+              <div>
+                <span className="font-medium">Subtitle: </span>
+                <span>{currentEditingVariant.subtitle}</span>
+              </div>
+            )}
+            <div>
+              <span className="font-medium">Message: </span>
+              <span>{currentEditingVariant.message}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show variants list when in variants view mode */}
+      {showVariantsView && hasVariants && (
+        <div className="mb-6">
+          <h4 className="text-lg font-medium mb-4">A/B Test Variants</h4>
+          <div className="space-y-4">
+            {variants?.map((variant) => (
+              <div
+                key={variant.id}
+                className={`border rounded-lg p-4 ${variant.id === activeVariant ? "border-indigo-500 bg-indigo-50" : ""}`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-medium">
+                      {variant.id === "variant-a"
+                        ? "Variant A"
+                        : variant.id === "variant-b"
+                          ? "Variant B"
+                          : `Variant ${variant.id.split("-")[1].toUpperCase()}`}
+                    </h5>
+                    <p className="text-sm text-gray-500 mt-1">{variant.title}</p>
+                    <p className="text-xs text-gray-400">{variant.message}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingVariant(variant.id)
+                        setShowVariantsView(false)
+                        // Set the description based on the variant content
+                        setDescription(
+                          `Generate variations of this notification: Title: ${variant.title}. Message: ${variant.message}`,
+                        )
+                        // Generate notifications for this variant
+                        setTimeout(() => generateNotificationsFromExisting(), 100)
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    {variants && variants.length > 1 && (
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add buttons to continue with other options */}
+          <div className="mt-6 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowVariantsView(false)
+                setCurrentStep(1)
+              }}
+              className="mr-2"
+            >
+              Create New Notification
+            </Button>
+            <Button onClick={onClose}>Done</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 1: Input - Only show if not in variants view */}
+      {currentStep === 1 && !showVariantsView && (
         <div className="space-y-6">
           <h3 className="text-xl font-medium">What would you like to say?</h3>
 
-          <Tabs defaultValue="description" onValueChange={(value) => setInputMethod(value as "description" | "guided")}>
+          <Tabs
+            defaultValue="description"
+            onValueChange={(value) => {
+              setInputMethod(value as "description" | "guided")
+            }}
+          >
             <TabsList className="w-full mb-6 bg-transparent p-0 border-b gap-2 justify-start">
               <TabsTrigger
                 value="description"
@@ -757,7 +939,7 @@ export function AINotificationGenerator({
       )}
 
       {/* Step 2: Select or Refine */}
-      {currentStep === 2 && (
+      {currentStep === 2 && !showVariantsView && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-medium">Select a notification or request refinements</h3>
@@ -768,7 +950,7 @@ export function AINotificationGenerator({
           </div>
 
           {/* Display original content */}
-          {existingNotification && (
+          {existingNotification && !editingVariant && (
             <div className="border-2 border-[#303293] rounded-lg p-4 mb-6 bg-[#ececfc] bg-opacity-30">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">Your Original Content</h4>
@@ -929,7 +1111,7 @@ export function AINotificationGenerator({
           )}
 
           <div className="flex justify-end space-x-3">
-            {selectedOption !== null && (
+            {selectedOption !== null && !editingVariant && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center">
@@ -959,6 +1141,16 @@ export function AINotificationGenerator({
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating Variants...
+                </>
+              ) : editingVariant ? (
+                <>
+                  <ThumbsUp className="mr-2 h-4 w-4" />
+                  Apply to{" "}
+                  {editingVariant === "variant-a"
+                    ? "Variant A"
+                    : editingVariant === "variant-b"
+                      ? "Variant B"
+                      : `Variant ${editingVariant.split("-")[1].toUpperCase()}`}
                 </>
               ) : (
                 <>

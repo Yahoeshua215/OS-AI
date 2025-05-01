@@ -1,50 +1,45 @@
 "use client"
-import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { AINotificationGenerator } from "@/components/ai-notification-generator"
-import { useSupabase } from "@/lib/use-supabase"
 
 interface AINotificationPanelProps {
   open: boolean
   onClose: () => void
-  onSelectNotification: (notification: { title: string; subtitle: string; body: string }) => void
-  existingNotification?: {
+  onSelectNotification: (notification: { title: string; subtitle: string; body: string }, variantId?: string) => void
+  variants?: Array<{
+    id: string
     title: string
     subtitle: string
     message: string
-  }
+    image: string
+    url: string
+  }>
+  activeVariant?: string
+  onDeleteVariant?: (variantId: string) => void
 }
 
 export function AINotificationPanel({
   open,
   onClose,
   onSelectNotification,
-  existingNotification,
+  variants,
+  activeVariant,
+  onDeleteVariant,
 }: AINotificationPanelProps) {
-  // Force Supabase to be considered as configured
-  useSupabase(true)
-
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="bg-black/20 absolute inset-0" onClick={onClose}></div>
-
-      <div className="relative w-full max-w-4xl bg-white shadow-lg flex flex-col h-full overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold">Smart Assist</h2>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6">
+    <Sheet open={open} onOpenChange={onClose}>
+      <SheetContent className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl overflow-y-auto">
+        <div className="px-1 py-6">
+          <h2 className="text-2xl font-bold mb-6">Smart Assist</h2>
           <AINotificationGenerator
             onSelectNotification={onSelectNotification}
             onClose={onClose}
-            existingNotification={existingNotification}
+            variants={variants}
+            activeVariant={activeVariant}
+            onDeleteVariant={onDeleteVariant}
           />
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
 }

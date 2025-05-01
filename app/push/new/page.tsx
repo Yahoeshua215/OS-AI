@@ -14,6 +14,7 @@ import { ChevronDown, Upload, Wand2, Sparkles, LayoutPanelLeft, Eye } from "luci
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AINotificationPanel } from "@/components/ai-notification-panel"
+import { RefreshVariationsButton } from "@/components/refresh-variations-button"
 
 export default function NewPushPage() {
   const router = useRouter()
@@ -160,7 +161,7 @@ export default function NewPushPage() {
                     className="bg-[#f3f0f4] bg-opacity-50 rounded-md p-2 flex items-center justify-between cursor-pointer hover:bg-opacity-70 transition-colors"
                     onClick={handleOpenAIPanel}
                   >
-                    <span className="text-sm text-[#303293]">Use Smart Assist to create or refine your copy</span>
+                    <span className="text-sm text-[#303293]">Use Smart Assist to create or refine your content</span>
                     <Sparkles className="h-4 w-4 text-[#303293]" />
                   </div>
 
@@ -176,13 +177,13 @@ export default function NewPushPage() {
                         value={notification.title}
                         onChange={(e) => updateNotification("title", e.target.value)}
                       />
-                      <button
-                        type="button"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#cbd1d7]"
-                        aria-label="Add title"
-                      >
-                        +
-                      </button>
+                      {notification.title.trim() && (
+                        <RefreshVariationsButton
+                          content={notification.title}
+                          fieldType="title"
+                          onSelectVariation={(variation) => updateNotification("title", variation)}
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -198,13 +199,13 @@ export default function NewPushPage() {
                         value={notification.subtitle}
                         onChange={(e) => updateNotification("subtitle", e.target.value)}
                       />
-                      <button
-                        type="button"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#cbd1d7]"
-                        aria-label="Add subtitle"
-                      >
-                        +
-                      </button>
+                      {notification.subtitle.trim() && (
+                        <RefreshVariationsButton
+                          content={notification.subtitle}
+                          fieldType="subtitle"
+                          onSelectVariation={(variation) => updateNotification("subtitle", variation)}
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -221,9 +222,13 @@ export default function NewPushPage() {
                         onChange={(e) => updateNotification("message", e.target.value)}
                         required
                       />
-                      <button type="button" className="absolute right-2 top-4 text-[#cbd1d7]" aria-label="Add message">
-                        +
-                      </button>
+                      {notification.message.trim() && (
+                        <RefreshVariationsButton
+                          content={notification.message}
+                          fieldType="message"
+                          onSelectVariation={(variation) => updateNotification("message", variation)}
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -262,13 +267,6 @@ export default function NewPushPage() {
                         value={notification.url}
                         onChange={(e) => updateNotification("url", e.target.value)}
                       />
-                      <button
-                        type="button"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#cbd1d7]"
-                        aria-label="Add URL"
-                      >
-                        +
-                      </button>
                     </div>
                   </div>
 

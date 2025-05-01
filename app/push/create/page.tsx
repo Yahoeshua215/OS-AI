@@ -11,8 +11,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Upload, Wand2 } from "lucide-react"
+import { Plus, Upload, Wand2, Sparkles } from "lucide-react"
 import Link from "next/link"
+import { AINotificationPanel } from "@/components/ai-notification-panel"
+import { RefreshVariationsButton } from "@/components/refresh-variations-button"
 
 export default function CreatePushPage() {
   const router = useRouter()
@@ -33,6 +35,9 @@ export default function CreatePushPage() {
       url: string
     }>
   >([])
+
+  // Add state for the AI panel
+  const [aiPanelOpen, setAiPanelOpen] = useState(false)
 
   // Initialize variants based on URL params
   useEffect(() => {
@@ -86,6 +91,33 @@ export default function CreatePushPage() {
     initialized.current = true
   }, [searchParams])
 
+  // Add these functions after the existing state declarations
+  const handleOpenAIPanel = () => {
+    setAiPanelOpen(true)
+  }
+
+  const handleCloseAIPanel = () => {
+    setAiPanelOpen(false)
+  }
+
+  const handleSelectNotification = (
+    aiNotification: { title: string; subtitle: string; body: string },
+    variantId?: string,
+  ) => {
+    if (variantId) {
+      // Update a specific variant
+      updateVariant(variantId, "title", aiNotification.title)
+      updateVariant(variantId, "subtitle", aiNotification.subtitle || "")
+      updateVariant(variantId, "message", aiNotification.body)
+    } else {
+      // Update the currently active variant
+      updateVariant(activeVariant, "title", aiNotification.title)
+      updateVariant(activeVariant, "subtitle", aiNotification.subtitle || "")
+      updateVariant(activeVariant, "message", aiNotification.body)
+    }
+    setAiPanelOpen(false)
+  }
+
   // Update a specific variant's data
   const updateVariant = (id: string, field: string, value: string) => {
     setVariants((prev) => prev.map((variant) => (variant.id === id ? { ...variant, [field]: value } : variant)))
@@ -117,6 +149,20 @@ export default function CreatePushPage() {
         url: "",
       },
     ])
+  }
+
+  // Delete a variant
+  const deleteVariant = (id: string) => {
+    // Don't allow deleting if there's only one variant
+    if (variants.length <= 1) return
+
+    // Remove the variant
+    setVariants((prev) => prev.filter((variant) => variant.id !== id))
+
+    // If the active variant is being deleted, switch to the first variant
+    if (activeVariant === id) {
+      setActiveVariant(variants[0].id === id ? variants[1].id : variants[0].id)
+    }
   }
 
   // Get the current active variant data
@@ -200,17 +246,44 @@ export default function CreatePushPage() {
                 <Tabs value={activeVariant} onValueChange={setActiveVariant} className="mb-6">
                   <TabsList className="border-b w-full justify-start rounded-none bg-transparent p-0">
                     {variants.map((variant) => (
-                      <TabsTrigger
-                        key={variant.id}
-                        value={variant.id}
-                        className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-                      >
-                        {variant.id === "variant-a"
-                          ? "Variant A"
-                          : variant.id === "variant-b"
-                            ? "Variant B"
-                            : `Variant ${variant.id.split("-")[1].toUpperCase()}`}
-                      </TabsTrigger>
+                      <div key={variant.id} className="group relative">
+                        <TabsTrigger
+                          value={variant.id}
+                          className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                        >
+                          {variant.id === "variant-a"
+                            ? "Variant A"
+                            : variant.id === "variant-b"
+                              ? "Variant B"
+                              : `Variant ${variant.id.split("-")[1].toUpperCase()}`}
+                        </TabsTrigger>
+                        {variants.length > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              deleteVariant(variant.id)
+                            }}
+                            className="absolute -right-1 -top-1 size-5 rounded-full bg-gray-200 text-gray-500 opacity-0 transition-opacity hover:bg-gray-300 group-hover:opacity-100 flex items-center justify-center"
+                            aria-label={`Delete ${variant.id === "variant-a" ? "Variant A" : variant.id === "variant-b" ? "Variant B" : `Variant ${variant.id.split("-")[1].toUpperCase()}`}`}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M18 6 6 18"></path>
+                              <path d="m6 6 12 12"></path>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     ))}
                     {variants.length < 12 && (
                       <Button
@@ -227,52 +300,81 @@ export default function CreatePushPage() {
                 </Tabs>
               )}
 
-              <Button variant="outline" type="button" className="mb-6 flex items-center text-indigo-600">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Languages
-              </Button>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
+                  <div
+                    className="bg-[#f3f0f4] bg-opacity-50 rounded-md p-2 flex items-center justify-between cursor-pointer hover:bg-opacity-70 transition-colors"
+                    onClick={handleOpenAIPanel}
+                  >
+                    <span className="text-sm text-[#303293]">Use Smart Assist to create or refine your content</span>
+                    <Sparkles className="h-4 w-4 text-[#303293]" />
+                  </div>
                   <div>
                     <Label htmlFor={`title-${activeVariant}`} className="font-medium">
                       Title
                     </Label>
-                    <Input
-                      id={`title-${activeVariant}`}
-                      placeholder="Title (Any/English)"
-                      className="mt-1"
-                      value={currentVariant?.title || ""}
-                      onChange={(e) => updateVariant(activeVariant, "title", e.target.value)}
-                      required
-                    />
+                    <div className="relative mt-1">
+                      <Input
+                        id={`title-${activeVariant}`}
+                        placeholder="Title (Any/English)"
+                        className="mt-1 pr-10"
+                        value={currentVariant?.title || ""}
+                        onChange={(e) => updateVariant(activeVariant, "title", e.target.value)}
+                        required
+                      />
+                      {currentVariant?.title?.trim() && (
+                        <RefreshVariationsButton
+                          content={currentVariant.title}
+                          fieldType="title"
+                          onSelectVariation={(variation) => updateVariant(activeVariant, "title", variation)}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <Label htmlFor={`subtitle-${activeVariant}`} className="font-medium">
                       Subtitle
                     </Label>
-                    <Input
-                      id={`subtitle-${activeVariant}`}
-                      placeholder="Subtitle (Any/English)"
-                      className="mt-1"
-                      value={currentVariant?.subtitle || ""}
-                      onChange={(e) => updateVariant(activeVariant, "subtitle", e.target.value)}
-                    />
+                    <div className="relative mt-1">
+                      <Input
+                        id={`subtitle-${activeVariant}`}
+                        placeholder="Subtitle (Any/English)"
+                        className="mt-1 pr-10"
+                        value={currentVariant?.subtitle || ""}
+                        onChange={(e) => updateVariant(activeVariant, "subtitle", e.target.value)}
+                      />
+                      {currentVariant?.subtitle?.trim() && (
+                        <RefreshVariationsButton
+                          content={currentVariant.subtitle}
+                          fieldType="subtitle"
+                          onSelectVariation={(variation) => updateVariant(activeVariant, "subtitle", variation)}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <Label htmlFor={`message-${activeVariant}`} className="font-medium">
                       Message<span className="text-red-500">*</span>
                     </Label>
-                    <Textarea
-                      id={`message-${activeVariant}`}
-                      placeholder="Message (Any/English)"
-                      className="mt-1"
-                      value={currentVariant?.message || ""}
-                      onChange={(e) => updateVariant(activeVariant, "message", e.target.value)}
-                      required
-                    />
+                    <div className="relative mt-1">
+                      <Textarea
+                        id={`message-${activeVariant}`}
+                        placeholder="Message (Any/English)"
+                        className="mt-1 pr-10"
+                        value={currentVariant?.message || ""}
+                        onChange={(e) => updateVariant(activeVariant, "message", e.target.value)}
+                        required
+                      />
+                      {currentVariant?.message?.trim() && (
+                        <RefreshVariationsButton
+                          content={currentVariant.message}
+                          fieldType="message"
+                          onSelectVariation={(variation) => updateVariant(activeVariant, "message", variation)}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -305,6 +407,16 @@ export default function CreatePushPage() {
                       value={currentVariant?.url || ""}
                       onChange={(e) => updateVariant(activeVariant, "url", e.target.value)}
                     />
+                  </div>
+                  <div>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      className="mt-4 flex items-center text-indigo-600 hover:bg-[#ececfc] hover:text-indigo-600"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Languages
+                    </Button>
                   </div>
                 </div>
 
@@ -348,6 +460,14 @@ export default function CreatePushPage() {
           </form>
         </main>
       </div>
+      <AINotificationPanel
+        open={aiPanelOpen}
+        onClose={handleCloseAIPanel}
+        onSelectNotification={handleSelectNotification}
+        variants={variants}
+        activeVariant={activeVariant}
+        onDeleteVariant={deleteVariant}
+      />
     </div>
   )
 }
