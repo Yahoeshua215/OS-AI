@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,8 @@ import { ChevronDown, Upload, Wand2, Sparkles, LayoutPanelLeft, Eye } from "luci
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AINotificationPanel } from "@/components/ai-notification-panel"
-import { RefreshVariationsButton } from "@/components/refresh-variations-button"
+import { InputEnhancementDropdown } from "@/components/input-enhancement-dropdown"
+import { RefreshVariationsButton, type RefreshVariationsButtonRef } from "@/components/refresh-variations-button"
 
 export default function NewPushPage() {
   const router = useRouter()
@@ -29,6 +30,16 @@ export default function NewPushPage() {
     image: "",
     url: "",
   })
+
+  // Refs for the message assist triggers
+  const titleAssistRef = useRef<RefreshVariationsButtonRef>(null)
+  const subtitleAssistRef = useRef<RefreshVariationsButtonRef>(null)
+  const messageAssistRef = useRef<RefreshVariationsButtonRef>(null)
+
+  // Refs for the input elements
+  const titleInputRef = useRef<HTMLInputElement>(null)
+  const subtitleInputRef = useRef<HTMLInputElement>(null)
+  const messageInputRef = useRef<HTMLTextAreaElement>(null)
 
   const updateNotification = (field: string, value: string) => {
     setNotification((prev) => ({ ...prev, [field]: value }))
@@ -68,6 +79,25 @@ export default function NewPushPage() {
       message: aiNotification.body,
     }))
     setAiPanelOpen(false)
+  }
+
+  // Handlers for the message assist triggers
+  const handleTitleMessageAssist = () => {
+    if (titleAssistRef.current) {
+      titleAssistRef.current.openPopover()
+    }
+  }
+
+  const handleSubtitleMessageAssist = () => {
+    if (subtitleAssistRef.current) {
+      subtitleAssistRef.current.openPopover()
+    }
+  }
+
+  const handleMessageMessageAssist = () => {
+    if (messageAssistRef.current) {
+      messageAssistRef.current.openPopover()
+    }
   }
 
   return (
@@ -176,14 +206,30 @@ export default function NewPushPage() {
                         className="pr-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
                         value={notification.title}
                         onChange={(e) => updateNotification("title", e.target.value)}
+                        ref={titleInputRef}
                       />
-                      {notification.title.trim() && (
-                        <RefreshVariationsButton
-                          content={notification.title}
-                          fieldType="title"
-                          onSelectVariation={(variation) => updateNotification("title", variation)}
-                        />
-                      )}
+                      <InputEnhancementDropdown
+                        content={notification.title}
+                        fieldType="title"
+                        onSelectMessageAssist={handleTitleMessageAssist}
+                        onInsertPersonalization={() => {
+                          // Placeholder for personalization tag insertion
+                          alert("Insert personalization tag for title")
+                        }}
+                        onInsertEmoji={() => {
+                          // Placeholder for emoji insertion
+                          alert("Insert emoji for title")
+                        }}
+                      />
+                      {/* RefreshVariationsButton for title */}
+                      <RefreshVariationsButton
+                        content={notification.title}
+                        fieldType="title"
+                        onSelectVariation={(variation) => updateNotification("title", variation)}
+                        onAdvancedOptions={handleOpenAIPanel}
+                        ref={titleAssistRef}
+                        inputRef={titleInputRef}
+                      />
                     </div>
                   </div>
 
@@ -198,14 +244,30 @@ export default function NewPushPage() {
                         className="pr-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
                         value={notification.subtitle}
                         onChange={(e) => updateNotification("subtitle", e.target.value)}
+                        ref={subtitleInputRef}
                       />
-                      {notification.subtitle.trim() && (
-                        <RefreshVariationsButton
-                          content={notification.subtitle}
-                          fieldType="subtitle"
-                          onSelectVariation={(variation) => updateNotification("subtitle", variation)}
-                        />
-                      )}
+                      <InputEnhancementDropdown
+                        content={notification.subtitle}
+                        fieldType="subtitle"
+                        onSelectMessageAssist={handleSubtitleMessageAssist}
+                        onInsertPersonalization={() => {
+                          // Placeholder for personalization tag insertion
+                          alert("Insert personalization tag for subtitle")
+                        }}
+                        onInsertEmoji={() => {
+                          // Placeholder for emoji insertion
+                          alert("Insert emoji for subtitle")
+                        }}
+                      />
+                      {/* RefreshVariationsButton for subtitle */}
+                      <RefreshVariationsButton
+                        content={notification.subtitle}
+                        fieldType="subtitle"
+                        onSelectVariation={(variation) => updateNotification("subtitle", variation)}
+                        onAdvancedOptions={handleOpenAIPanel}
+                        ref={subtitleAssistRef}
+                        inputRef={subtitleInputRef}
+                      />
                     </div>
                   </div>
 
@@ -221,14 +283,31 @@ export default function NewPushPage() {
                         value={notification.message}
                         onChange={(e) => updateNotification("message", e.target.value)}
                         required
+                        ref={messageInputRef}
                       />
-                      {notification.message.trim() && (
-                        <RefreshVariationsButton
-                          content={notification.message}
-                          fieldType="message"
-                          onSelectVariation={(variation) => updateNotification("message", variation)}
-                        />
-                      )}
+                      <InputEnhancementDropdown
+                        content={notification.message}
+                        fieldType="message"
+                        onSelectMessageAssist={handleMessageMessageAssist}
+                        onInsertPersonalization={() => {
+                          // Placeholder for personalization tag insertion
+                          alert("Insert personalization tag for message")
+                        }}
+                        onInsertEmoji={() => {
+                          // Placeholder for emoji insertion
+                          alert("Insert emoji for message")
+                        }}
+                        className="top-4"
+                      />
+                      {/* RefreshVariationsButton for message */}
+                      <RefreshVariationsButton
+                        content={notification.message}
+                        fieldType="message"
+                        onSelectVariation={(variation) => updateNotification("message", variation)}
+                        onAdvancedOptions={handleOpenAIPanel}
+                        ref={messageAssistRef}
+                        inputRef={messageInputRef}
+                      />
                     </div>
                   </div>
 

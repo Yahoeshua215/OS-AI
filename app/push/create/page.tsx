@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Plus, Upload, Wand2, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { AINotificationPanel } from "@/components/ai-notification-panel"
-import { RefreshVariationsButton } from "@/components/refresh-variations-button"
+import { InputEnhancementDropdown } from "@/components/input-enhancement-dropdown"
+import { RefreshVariationsButton, type RefreshVariationsButtonRef } from "@/components/refresh-variations-button"
 
 export default function CreatePushPage() {
   const router = useRouter()
@@ -38,6 +39,16 @@ export default function CreatePushPage() {
 
   // Add state for the AI panel
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+
+  // Refs for the hidden message assist triggers
+  const titleAssistRef = useRef<RefreshVariationsButtonRef>(null)
+  const subtitleAssistRef = useRef<RefreshVariationsButtonRef>(null)
+  const messageAssistRef = useRef<RefreshVariationsButtonRef>(null)
+
+  // Refs for the input elements
+  const titleInputRef = useRef<HTMLInputElement>(null)
+  const subtitleInputRef = useRef<HTMLInputElement>(null)
+  const messageInputRef = useRef<HTMLTextAreaElement>(null)
 
   // Initialize variants based on URL params
   useEffect(() => {
@@ -78,9 +89,9 @@ export default function CreatePushPage() {
 
       newVariants.push({
         id: variantId,
-        title: variantTitle,
-        subtitle: variantSubtitle,
-        message: variantBody,
+        title: variantTitle || title,
+        subtitle: variantSubtitle || subtitle,
+        message: variantBody || body,
         image: "",
         url: "",
       })
@@ -173,6 +184,25 @@ export default function CreatePushPage() {
     message: "",
     image: "",
     url: "",
+  }
+
+  // Handlers for the message assist triggers
+  const handleTitleMessageAssist = () => {
+    if (titleAssistRef.current) {
+      titleAssistRef.current.openPopover()
+    }
+  }
+
+  const handleSubtitleMessageAssist = () => {
+    if (subtitleAssistRef.current) {
+      subtitleAssistRef.current.openPopover()
+    }
+  }
+
+  const handleMessageMessageAssist = () => {
+    if (messageAssistRef.current) {
+      messageAssistRef.current.openPopover()
+    }
   }
 
   return (
@@ -321,14 +351,30 @@ export default function CreatePushPage() {
                         value={currentVariant?.title || ""}
                         onChange={(e) => updateVariant(activeVariant, "title", e.target.value)}
                         required
+                        ref={titleInputRef}
                       />
-                      {currentVariant?.title?.trim() && (
-                        <RefreshVariationsButton
-                          content={currentVariant.title}
-                          fieldType="title"
-                          onSelectVariation={(variation) => updateVariant(activeVariant, "title", variation)}
-                        />
-                      )}
+                      <InputEnhancementDropdown
+                        content={currentVariant.title}
+                        fieldType="title"
+                        onSelectMessageAssist={handleTitleMessageAssist}
+                        onInsertPersonalization={() => {
+                          // Placeholder for personalization tag insertion
+                          alert(`Insert personalization tag for title`)
+                        }}
+                        onInsertEmoji={() => {
+                          // Placeholder for emoji insertion
+                          alert(`Insert emoji for title`)
+                        }}
+                      />
+                      {/* RefreshVariationsButton for title */}
+                      <RefreshVariationsButton
+                        content={currentVariant.title}
+                        fieldType="title"
+                        onSelectVariation={(variation) => updateVariant(activeVariant, "title", variation)}
+                        onAdvancedOptions={handleOpenAIPanel}
+                        ref={titleAssistRef}
+                        inputRef={titleInputRef}
+                      />
                     </div>
                   </div>
 
@@ -343,14 +389,30 @@ export default function CreatePushPage() {
                         className="mt-1 pr-10"
                         value={currentVariant?.subtitle || ""}
                         onChange={(e) => updateVariant(activeVariant, "subtitle", e.target.value)}
+                        ref={subtitleInputRef}
                       />
-                      {currentVariant?.subtitle?.trim() && (
-                        <RefreshVariationsButton
-                          content={currentVariant.subtitle}
-                          fieldType="subtitle"
-                          onSelectVariation={(variation) => updateVariant(activeVariant, "subtitle", variation)}
-                        />
-                      )}
+                      <InputEnhancementDropdown
+                        content={currentVariant.subtitle}
+                        fieldType="subtitle"
+                        onSelectMessageAssist={handleSubtitleMessageAssist}
+                        onInsertPersonalization={() => {
+                          // Placeholder for personalization tag insertion
+                          alert(`Insert personalization tag for subtitle`)
+                        }}
+                        onInsertEmoji={() => {
+                          // Placeholder for emoji insertion
+                          alert(`Insert emoji for subtitle`)
+                        }}
+                      />
+                      {/* RefreshVariationsButton for subtitle */}
+                      <RefreshVariationsButton
+                        content={currentVariant.subtitle}
+                        fieldType="subtitle"
+                        onSelectVariation={(variation) => updateVariant(activeVariant, "subtitle", variation)}
+                        onAdvancedOptions={handleOpenAIPanel}
+                        ref={subtitleAssistRef}
+                        inputRef={subtitleInputRef}
+                      />
                     </div>
                   </div>
 
@@ -366,14 +428,31 @@ export default function CreatePushPage() {
                         value={currentVariant?.message || ""}
                         onChange={(e) => updateVariant(activeVariant, "message", e.target.value)}
                         required
+                        ref={messageInputRef}
                       />
-                      {currentVariant?.message?.trim() && (
-                        <RefreshVariationsButton
-                          content={currentVariant.message}
-                          fieldType="message"
-                          onSelectVariation={(variation) => updateVariant(activeVariant, "message", variation)}
-                        />
-                      )}
+                      <InputEnhancementDropdown
+                        content={currentVariant.message}
+                        fieldType="message"
+                        onSelectMessageAssist={handleMessageMessageAssist}
+                        onInsertPersonalization={() => {
+                          // Placeholder for personalization tag insertion
+                          alert(`Insert personalization tag for message`)
+                        }}
+                        onInsertEmoji={() => {
+                          // Placeholder for emoji insertion
+                          alert(`Insert emoji for message`)
+                        }}
+                        className="top-4"
+                      />
+                      {/* RefreshVariationsButton for message */}
+                      <RefreshVariationsButton
+                        content={currentVariant.message}
+                        fieldType="message"
+                        onSelectVariation={(variation) => updateVariant(activeVariant, "message", variation)}
+                        onAdvancedOptions={handleOpenAIPanel}
+                        ref={messageAssistRef}
+                        inputRef={messageInputRef}
+                      />
                     </div>
                   </div>
 
