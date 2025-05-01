@@ -6,10 +6,20 @@ import { useSupabase } from "@/lib/use-supabase"
 interface AINotificationPanelProps {
   open: boolean
   onClose: () => void
-  onSelectNotification: (notification: { title: string; body: string }) => void
+  onSelectNotification: (notification: { title: string; subtitle: string; body: string }) => void
+  existingNotification?: {
+    title: string
+    subtitle: string
+    message: string
+  }
 }
 
-export function AINotificationPanel({ open, onClose, onSelectNotification }: AINotificationPanelProps) {
+export function AINotificationPanel({
+  open,
+  onClose,
+  onSelectNotification,
+  existingNotification,
+}: AINotificationPanelProps) {
   // Force Supabase to be considered as configured
   useSupabase(true)
 
@@ -21,14 +31,18 @@ export function AINotificationPanel({ open, onClose, onSelectNotification }: AIN
 
       <div className="relative w-full max-w-4xl bg-white shadow-lg flex flex-col h-full overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold">Generate Push Notification with AI</h2>
+          <h2 className="text-xl font-semibold">Smart Assist</h2>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          <AINotificationGenerator onSelectNotification={onSelectNotification} onClose={onClose} />
+          <AINotificationGenerator
+            onSelectNotification={onSelectNotification}
+            onClose={onClose}
+            existingNotification={existingNotification}
+          />
         </div>
       </div>
     </div>

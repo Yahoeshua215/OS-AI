@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,15 +16,23 @@ import { Badge } from "@/components/ui/badge"
 import type { GenerationPrompt } from "@/lib/openai"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
-// Update the import to include the useSupabase hook
 import { useSupabase } from "@/lib/use-supabase"
 
 interface AINotificationGeneratorProps {
   onSelectNotification: (notification: { title: string; subtitle: string; body: string }) => void
   onClose: () => void
+  existingNotification?: {
+    title: string
+    subtitle: string
+    message: string
+  }
 }
 
-export function AINotificationGenerator({ onSelectNotification, onClose }: AINotificationGeneratorProps) {
+export function AINotificationGenerator({
+  onSelectNotification,
+  onClose,
+  existingNotification,
+}: AINotificationGeneratorProps) {
   const router = useRouter()
 
   // Add this line to skip the Supabase configuration check
@@ -64,8 +72,147 @@ export function AINotificationGenerator({ onSelectNotification, onClose }: AINot
     includeEmoji: true,
   })
 
+  // Check if we have existing notification content
+  useEffect(() => {
+    if (existingNotification) {
+      const hasContent =
+        existingNotification.title.trim() !== "" ||
+        existingNotification.subtitle.trim() !== "" ||
+        existingNotification.message.trim() !== ""
+
+      if (hasContent) {
+        // Create a description from the existing content
+        let contentDescription = "Generate variations of this notification: "
+        if (existingNotification.title) contentDescription += `Title: ${existingNotification.title}. `
+        if (existingNotification.subtitle) contentDescription += `Subtitle: ${existingNotification.subtitle}. `
+        if (existingNotification.message) contentDescription += `Message: ${existingNotification.message}.`
+
+        setDescription(contentDescription)
+
+        // Generate variations immediately
+        generateNotificationsFromExisting()
+      }
+    }
+  }, [existingNotification])
+
   const handlePromptChange = (field: keyof GenerationPrompt, value: any) => {
-    setPrompt((prev) => ({ ...prev, [field]: value }))
+    setPrompt((prev) => {
+      const newPrompt = { ...prev, [field]: value }
+
+      // If we're on step 2 and have existing content, regenerate options
+      if (currentStep === 2 && existingNotification) {
+        setTimeout(() => generateNotificationsFromExisting(newPrompt), 100)
+      }
+
+      return newPrompt
+    })
+  }
+
+  const generateNotificationsFromExisting = async (customPrompt?: GenerationPrompt) => {
+    setIsGenerating(true)
+    setError(null)
+
+    try {
+      const promptToUse = customPrompt || prompt
+
+      // Prepare the request payload based on existing content
+      const payload = {
+        description: description,
+        count: 3,
+        tone: promptToUse.tone,
+        length: promptToUse.length,
+        includeEmoji: promptToUse.includeEmoji,
+        existingContent: {
+          title: existingNotification?.title || "",
+          subtitle: existingNotification?.subtitle || "",
+          message: existingNotification?.message || "",
+        },
+      }
+
+      const response = await fetch("/api/generate-notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        console.warn("API returned an error:", data.error)
+        setError(data.error)
+
+        // Provide mock data for demonstration purposes
+        setGeneratedOptions([
+          {
+            title: existingNotification?.title || "Flash Sale: 24 Hours Only! 🔥",
+            subtitle: existingNotification?.subtitle || "Limited Time Offer",
+            body: existingNotification?.message || "Exclusive deals up to 50% off. Shop now before they're gone!",
+          },
+          {
+            title: existingNotification?.title ? `${existingNotification.title} - Variant` : "Your Cart Misses You 🛒",
+            subtitle: existingNotification?.subtitle || "Items Waiting for You",
+            body: existingNotification?.message
+              ? `${existingNotification.message} (Alternative version)`
+              : "Items in your cart are waiting. Complete your purchase today!",
+          },
+          {
+            title: existingNotification?.title
+              ? `${existingNotification.title} - Option 3`
+              : "New Arrivals Just Dropped ✨",
+            subtitle: existingNotification?.subtitle || "Fresh Collection",
+            body: existingNotification?.message
+              ? `${existingNotification.message} (Another version)`
+              : "Be the first to shop our latest collection.",
+          },
+        ])
+      } else if (data.notifications && data.notifications.length > 0) {
+        setGeneratedOptions(data.notifications)
+      } else {
+        throw new Error("No notification data received")
+      }
+
+      // If we're already on step 2, don't change the step
+      if (currentStep !== 2) {
+        setCurrentStep(2)
+      }
+    } catch (error) {
+      console.error("Error generating notifications:", error)
+      setError(error instanceof Error ? error.message : "Failed to generate notifications")
+
+      // Provide mock data for demonstration purposes
+      setGeneratedOptions([
+        {
+          title: existingNotification?.title || "Flash Sale: 24 Hours Only! 🔥",
+          subtitle: existingNotification?.subtitle || "Limited Time Offer",
+          body: existingNotification?.message || "Exclusive deals up to 50% off. Shop now before they're gone!",
+        },
+        {
+          title: existingNotification?.title ? `${existingNotification.title} - Variant` : "Your Cart Misses You 🛒",
+          subtitle: existingNotification?.subtitle || "Items Waiting for You",
+          body: existingNotification?.message
+            ? `${existingNotification.message} (Alternative version)`
+            : "Items in your cart are waiting. Complete your purchase today!",
+        },
+        {
+          title: existingNotification?.title
+            ? `${existingNotification.title} - Option 3`
+            : "New Arrivals Just Dropped ✨",
+          subtitle: existingNotification?.subtitle || "Fresh Collection",
+          body: existingNotification?.message
+            ? `${existingNotification.message} (Another version)`
+            : "Be the first to shop our latest collection.",
+        },
+      ])
+
+      // If we're already on step 2, don't change the step
+      if (currentStep !== 2) {
+        setCurrentStep(2)
+      }
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const generateNotifications = async () => {
@@ -76,7 +223,7 @@ export function AINotificationGenerator({ onSelectNotification, onClose }: AINot
       // Prepare the request payload based on input method
       const payload =
         inputMethod === "description"
-          ? { description, count: 3, tone: prompt.tone, length: prompt.length }
+          ? { description, count: 3, tone: prompt.tone, length: prompt.length, includeEmoji: prompt.includeEmoji }
           : { ...prompt, count: 3 }
 
       const response = await fetch("/api/generate-notifications", {
@@ -619,6 +766,94 @@ export function AINotificationGenerator({ onSelectNotification, onClose }: AINot
               Start Over
             </Button>
           </div>
+
+          {/* Display original content */}
+          {existingNotification && (
+            <div className="border-2 border-[#303293] rounded-lg p-4 mb-6 bg-[#ececfc] bg-opacity-30">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Your Original Content</h4>
+                <Badge className="bg-[#303293]">Original</Badge>
+              </div>
+              <div className="space-y-2">
+                {existingNotification.title && (
+                  <div>
+                    <span className="font-medium">Title: </span>
+                    <span>{existingNotification.title}</span>
+                  </div>
+                )}
+                {existingNotification.subtitle && (
+                  <div>
+                    <span className="font-medium">Subtitle: </span>
+                    <span>{existingNotification.subtitle}</span>
+                  </div>
+                )}
+                {existingNotification.message && (
+                  <div>
+                    <span className="font-medium">Message: </span>
+                    <span>{existingNotification.message}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Tone and Length options for refining existing content */}
+          {existingNotification && (
+            <div className="bg-[#f3f0f4] bg-opacity-70 p-4 rounded-lg mb-4">
+              <h4 className="font-medium mb-3">Refine options</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="refine-tone">Tone</Label>
+                  <Select value={prompt.tone} onValueChange={(value) => handlePromptChange("tone", value)}>
+                    <SelectTrigger id="refine-tone">
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="friendly">Friendly</SelectItem>
+                      <SelectItem value="professional">Professional</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="humorous">Humorous</SelectItem>
+                      <SelectItem value="formal">Formal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="refine-length">Length</Label>
+                  <Select
+                    value={prompt.length}
+                    onValueChange={(value) => handlePromptChange("length", value as "short" | "medium" | "long")}
+                  >
+                    <SelectTrigger id="refine-length">
+                      <SelectValue placeholder="Select length" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="short">Short (5-7 words)</SelectItem>
+                      <SelectItem value="medium">Medium (8-12 words)</SelectItem>
+                      <SelectItem value="long">Long (13-20 words)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 mt-4">
+                <Switch
+                  id="refine-emoji"
+                  checked={prompt.includeEmoji}
+                  onCheckedChange={(checked) => handlePromptChange("includeEmoji", checked)}
+                />
+                <Label htmlFor="refine-emoji">Include Emojis</Label>
+              </div>
+
+              {isGenerating && (
+                <div className="mt-2 flex items-center justify-center text-sm text-gray-500">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating options...
+                </div>
+              )}
+            </div>
+          )}
 
           <RadioGroup
             value={selectedOption !== null ? selectedOption.toString() : undefined}

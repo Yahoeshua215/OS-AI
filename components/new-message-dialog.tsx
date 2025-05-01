@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { AINotificationPanel } from "@/components/ai-notification-panel"
 import { MessageComposer } from "@/components/message-composer"
 import { useSupabase } from "@/lib/use-supabase"
+import { useRouter } from "next/navigation"
 
 interface NewMessageSidePanelProps {
   open: boolean
@@ -19,6 +20,7 @@ export function NewMessageSidePanel({ open, onClose }: NewMessageSidePanelProps)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [composerOpen, setComposerOpen] = useState(false)
   const [notificationData, setNotificationData] = useState<{ title: string; body: string } | null>(null)
+  const router = useRouter()
 
   // Force Supabase to be considered as configured
   useSupabase(true)
@@ -43,8 +45,7 @@ export function NewMessageSidePanel({ open, onClose }: NewMessageSidePanelProps)
   }
 
   const handleBlankSelect = () => {
-    setNotificationData({ title: "", body: "" })
-    setComposerOpen(true)
+    router.push("/push/new")
   }
 
   const handleSelectNotification = (notification: { title: string; body: string }) => {
