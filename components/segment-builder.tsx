@@ -33,12 +33,13 @@ import type { SegmentFilter } from "@/types/segment-types"
 
 interface SegmentBuilderProps {
   initialFilters: SegmentFilter[]
+  initialName?: string
   onSave: (name: string, filters: SegmentFilter[]) => void
   onClose: () => void
 }
 
-export function SegmentBuilder({ initialFilters, onSave, onClose }: SegmentBuilderProps) {
-  const [segmentName, setSegmentName] = useState(`Segment ${new Date().toLocaleDateString()}`)
+export function SegmentBuilder({ initialFilters, initialName, onSave, onClose }: SegmentBuilderProps) {
+  const [segmentName, setSegmentName] = useState(initialName || `Segment ${new Date().toLocaleDateString()}`)
   const [filters, setFilters] = useState<SegmentFilter[]>(initialFilters || [])
   const [operators, setOperators] = useState<string[]>([]) // Array of operators between filters
   const [draggedFilter, setDraggedFilter] = useState<string | null>(null)
