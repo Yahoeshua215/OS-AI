@@ -111,13 +111,16 @@ export function NewMessageSidePanel({ open, onClose }: NewMessageSidePanelProps)
                   </Button>
                 </div>
 
-                {/* Generate from AI Card */}
-                <div className="border-2 border-pink-400 rounded-lg p-6 flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4">
-                    <Sparkles className="h-6 w-6 text-pink-600" />
+                {/* Generate from AI Card - Updated to "Describe your push content" */}
+                <div className="border rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                    <Sparkles className="h-6 w-6 text-indigo-600" />
                   </div>
-                  <h4 className="text-lg font-medium mb-2">Generate from AI</h4>
-                  <Button className="bg-pink-600 hover:bg-pink-700 mt-2" onClick={handleAISelect}>
+                  <h4 className="text-lg font-medium mb-2">Describe your push content</h4>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Let AI help you craft the perfect message based on your description
+                  </p>
+                  <Button className="bg-indigo-600 hover:bg-indigo-700 mt-2" onClick={handleAISelect}>
                     Select
                   </Button>
                 </div>

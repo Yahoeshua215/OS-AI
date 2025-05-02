@@ -121,7 +121,12 @@ export function Sidebar() {
             )}
           </div>
 
-          <NavItem href="/journeys" icon={<Package className="h-5 w-5" />} label="Journeys" />
+          <NavItem
+            href="/journeys"
+            icon={<Package className="h-5 w-5" />}
+            label="Journeys"
+            isActive={pathname === "/journeys" || pathname?.startsWith("/journeys/")}
+          />
 
           <div className="py-1">
             <button
