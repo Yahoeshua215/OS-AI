@@ -106,12 +106,15 @@ export function NewMessageSidePanel({ open, onClose }: NewMessageSidePanelProps)
                     <Edit3 className="h-6 w-6 text-indigo-600" />
                   </div>
                   <h4 className="text-lg font-medium mb-2">Blank Push</h4>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Create a push notification from scratch with full control over content
+                  </p>
                   <Button className="bg-indigo-600 hover:bg-indigo-700 mt-2" onClick={handleBlankSelect}>
                     Select
                   </Button>
                 </div>
 
-                {/* Generate from AI Card - Updated to "Describe your push content" */}
+                {/* Describe your push content Card */}
                 <div className="border rounded-lg p-6 flex flex-col items-center justify-center text-center">
                   <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                     <Sparkles className="h-6 w-6 text-indigo-600" />

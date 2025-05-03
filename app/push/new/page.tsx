@@ -187,129 +187,137 @@ export default function NewPushPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                  <div
-                    className="bg-[#f3f0f4] bg-opacity-50 rounded-md p-2 flex items-center justify-between cursor-pointer hover:bg-opacity-70 transition-colors"
-                    onClick={handleOpenAIPanel}
-                  >
-                    <span className="text-sm text-[#303293]">Use Smart Assist to create or refine your content</span>
-                    <Sparkles className="h-4 w-4 text-[#303293]" />
-                  </div>
+                  {/* Message Content Card - START */}
+                  <div className="border border-[#e5e8eb] rounded-lg p-5 space-y-5">
+                    {/* Smart Assist Banner - Now inside the card */}
+                    <div
+                      className="bg-[#f3f0f4] bg-opacity-50 rounded-md p-2 flex items-center justify-between cursor-pointer hover:bg-opacity-70 transition-colors"
+                      onClick={handleOpenAIPanel}
+                    >
+                      <span className="text-sm text-[#303293]">Use Smart Assist to create or refine your content</span>
+                      <Sparkles className="h-4 w-4 text-[#303293]" />
+                    </div>
 
-                  <div>
-                    <Label htmlFor="title" className="font-medium text-[#212121]">
-                      Title
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
-                        id="title"
-                        placeholder="Title (Any/English)"
-                        className="pr-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
-                        value={notification.title}
-                        onChange={(e) => updateNotification("title", e.target.value)}
-                        ref={titleInputRef}
-                      />
-                      <InputEnhancementDropdown
-                        content={notification.title}
-                        fieldType="title"
-                        onSelectMessageAssist={handleTitleMessageAssist}
-                        onInsertPersonalization={() => {
-                          // Placeholder for personalization tag insertion
-                          alert("Insert personalization tag for title")
-                        }}
-                        onInsertEmoji={() => {
-                          // Placeholder for emoji insertion
-                          alert("Insert emoji for title")
-                        }}
-                      />
-                      {/* RefreshVariationsButton for title */}
-                      <RefreshVariationsButton
-                        content={notification.title}
-                        fieldType="title"
-                        onSelectVariation={(variation) => updateNotification("title", variation)}
-                        onAdvancedOptions={handleOpenAIPanel}
-                        ref={titleAssistRef}
-                        inputRef={titleInputRef}
-                      />
+                    {/* Title Input */}
+                    <div>
+                      <Label htmlFor="title" className="font-medium text-[#212121]">
+                        Title
+                      </Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="title"
+                          placeholder="Title (Any/English)"
+                          className="pr-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
+                          value={notification.title}
+                          onChange={(e) => updateNotification("title", e.target.value)}
+                          ref={titleInputRef}
+                        />
+                        <InputEnhancementDropdown
+                          content={notification.title}
+                          fieldType="title"
+                          onSelectMessageAssist={handleTitleMessageAssist}
+                          onInsertPersonalization={() => {
+                            // Placeholder for personalization tag insertion
+                            alert("Insert personalization tag for title")
+                          }}
+                          onInsertEmoji={() => {
+                            // Placeholder for emoji insertion
+                            alert("Insert emoji for title")
+                          }}
+                        />
+                        {/* RefreshVariationsButton for title */}
+                        <RefreshVariationsButton
+                          content={notification.title}
+                          fieldType="title"
+                          onSelectVariation={(variation) => updateNotification("title", variation)}
+                          onAdvancedOptions={handleOpenAIPanel}
+                          ref={titleAssistRef}
+                          inputRef={titleInputRef}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Subtitle Input */}
+                    <div>
+                      <Label htmlFor="subtitle" className="font-medium text-[#212121]">
+                        Subtitle
+                      </Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="subtitle"
+                          placeholder="Subtitle (Any/English)"
+                          className="pr-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
+                          value={notification.subtitle}
+                          onChange={(e) => updateNotification("subtitle", e.target.value)}
+                          ref={subtitleInputRef}
+                        />
+                        <InputEnhancementDropdown
+                          content={notification.subtitle}
+                          fieldType="subtitle"
+                          onSelectMessageAssist={handleSubtitleMessageAssist}
+                          onInsertPersonalization={() => {
+                            // Placeholder for personalization tag insertion
+                            alert("Insert personalization tag for subtitle")
+                          }}
+                          onInsertEmoji={() => {
+                            // Placeholder for emoji insertion
+                            alert("Insert emoji for subtitle")
+                          }}
+                        />
+                        {/* RefreshVariationsButton for subtitle */}
+                        <RefreshVariationsButton
+                          content={notification.subtitle}
+                          fieldType="subtitle"
+                          onSelectVariation={(variation) => updateNotification("subtitle", variation)}
+                          onAdvancedOptions={handleOpenAIPanel}
+                          ref={subtitleAssistRef}
+                          inputRef={subtitleInputRef}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Message Input */}
+                    <div>
+                      <Label htmlFor="message" className="font-medium text-[#212121]">
+                        Message<span className="text-[#e54b4d]">*</span>
+                      </Label>
+                      <div className="relative mt-1">
+                        <Textarea
+                          id="message"
+                          placeholder="Message (Any/English)"
+                          className="pr-10 min-h-[120px] border-[#cbd1d7] focus-visible:ring-[#303293]"
+                          value={notification.message}
+                          onChange={(e) => updateNotification("message", e.target.value)}
+                          required
+                          ref={messageInputRef}
+                        />
+                        <InputEnhancementDropdown
+                          content={notification.message}
+                          fieldType="message"
+                          onSelectMessageAssist={handleMessageMessageAssist}
+                          onInsertPersonalization={() => {
+                            // Placeholder for personalization tag insertion
+                            alert("Insert personalization tag for message")
+                          }}
+                          onInsertEmoji={() => {
+                            // Placeholder for emoji insertion
+                            alert("Insert emoji for message")
+                          }}
+                          className="top-4"
+                        />
+                        {/* RefreshVariationsButton for message */}
+                        <RefreshVariationsButton
+                          content={notification.message}
+                          fieldType="message"
+                          onSelectVariation={(variation) => updateNotification("message", variation)}
+                          onAdvancedOptions={handleOpenAIPanel}
+                          ref={messageAssistRef}
+                          inputRef={messageInputRef}
+                        />
+                      </div>
                     </div>
                   </div>
-
-                  <div>
-                    <Label htmlFor="subtitle" className="font-medium text-[#212121]">
-                      Subtitle
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
-                        id="subtitle"
-                        placeholder="Subtitle (Any/English)"
-                        className="pr-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
-                        value={notification.subtitle}
-                        onChange={(e) => updateNotification("subtitle", e.target.value)}
-                        ref={subtitleInputRef}
-                      />
-                      <InputEnhancementDropdown
-                        content={notification.subtitle}
-                        fieldType="subtitle"
-                        onSelectMessageAssist={handleSubtitleMessageAssist}
-                        onInsertPersonalization={() => {
-                          // Placeholder for personalization tag insertion
-                          alert("Insert personalization tag for subtitle")
-                        }}
-                        onInsertEmoji={() => {
-                          // Placeholder for emoji insertion
-                          alert("Insert emoji for subtitle")
-                        }}
-                      />
-                      {/* RefreshVariationsButton for subtitle */}
-                      <RefreshVariationsButton
-                        content={notification.subtitle}
-                        fieldType="subtitle"
-                        onSelectVariation={(variation) => updateNotification("subtitle", variation)}
-                        onAdvancedOptions={handleOpenAIPanel}
-                        ref={subtitleAssistRef}
-                        inputRef={subtitleInputRef}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="message" className="font-medium text-[#212121]">
-                      Message<span className="text-[#e54b4d]">*</span>
-                    </Label>
-                    <div className="relative mt-1">
-                      <Textarea
-                        id="message"
-                        placeholder="Message (Any/English)"
-                        className="pr-10 min-h-[120px] border-[#cbd1d7] focus-visible:ring-[#303293]"
-                        value={notification.message}
-                        onChange={(e) => updateNotification("message", e.target.value)}
-                        required
-                        ref={messageInputRef}
-                      />
-                      <InputEnhancementDropdown
-                        content={notification.message}
-                        fieldType="message"
-                        onSelectMessageAssist={handleMessageMessageAssist}
-                        onInsertPersonalization={() => {
-                          // Placeholder for personalization tag insertion
-                          alert("Insert personalization tag for message")
-                        }}
-                        onInsertEmoji={() => {
-                          // Placeholder for emoji insertion
-                          alert("Insert emoji for message")
-                        }}
-                        className="top-4"
-                      />
-                      {/* RefreshVariationsButton for message */}
-                      <RefreshVariationsButton
-                        content={notification.message}
-                        fieldType="message"
-                        onSelectVariation={(variation) => updateNotification("message", variation)}
-                        onAdvancedOptions={handleOpenAIPanel}
-                        ref={messageAssistRef}
-                        inputRef={messageInputRef}
-                      />
-                    </div>
-                  </div>
+                  {/* Message Content Card - END */}
 
                   <div>
                     <Label htmlFor="image" className="font-medium text-[#212121]">
