@@ -9,6 +9,7 @@ import {
   BarChart,
   Activity,
   TrendingUp,
+  TrendingDown,
   Users,
   Clock,
   Award,
@@ -75,7 +76,7 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-semibold flex items-center">
             <Activity className="h-5 w-5 text-pink-500 mr-2" />
-            AI Insights
+            Message Insights
           </h2>
           <Button variant="outline" onClick={onClose}>
             Close
@@ -84,9 +85,7 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-6">
-            <p className="text-gray-600">
-              AI-powered insights and recommendations based on your push notification performance.
-            </p>
+            <p className="text-gray-600">Insights and recommendations based on your message performance.</p>
           </div>
 
           <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
@@ -115,10 +114,10 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
             </TabsList>
 
             <TabsContent value="overview" className="mt-6 space-y-6">
-              {/* AI Question Prompt */}
+              {/* Question Prompt */}
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-medium">Ask AI about your push notifications</CardTitle>
+                  <CardTitle className="text-base font-medium">Ask about your messages</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex gap-2">
@@ -133,7 +132,7 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
                       }}
                     />
                     <Button
-                      className="bg-pink-500 hover:bg-pink-600 text-white"
+                      className="bg-[#4346ce] hover:bg-[#3638b2] text-white"
                       onClick={handleAskQuestion}
                       disabled={isAsking || !question.trim()}
                     >
@@ -152,16 +151,16 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
                   </div>
 
                   {aiResponse && (
-                    <div className="mt-4 p-4 bg-pink-50 rounded-lg border border-pink-200">
+                    <div className="mt-4 p-4 bg-[#f0f0ff] rounded-lg border border-[#e0e0ff]">
                       <p className="text-gray-700">{aiResponse}</p>
                       <div className="flex justify-end mt-3">
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
                           <span>Was this helpful?</span>
-                          <button className="p-1 hover:bg-pink-100 rounded-full transition-colors">
-                            <ThumbsUp className="h-4 w-4 text-gray-500 hover:text-pink-500" />
+                          <button className="p-1 hover:bg-[#e0e0ff] rounded-full transition-colors">
+                            <ThumbsUp className="h-4 w-4 text-gray-500 hover:text-[#4346ce]" />
                           </button>
-                          <button className="p-1 hover:bg-pink-100 rounded-full transition-colors">
-                            <ThumbsDown className="h-4 w-4 text-gray-500 hover:text-pink-500" />
+                          <button className="p-1 hover:bg-[#e0e0ff] rounded-full transition-colors">
+                            <ThumbsDown className="h-4 w-4 text-gray-500 hover:text-[#4346ce]" />
                           </button>
                         </div>
                       </div>
@@ -173,18 +172,15 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
                       <p>Suggested questions:</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {[
-                          "What's the best time to send notifications?",
+                          "What's the best time to send messages?",
                           "How can I improve my CTR?",
                           "Do emojis affect engagement?",
-                          "How can I make my notifications better?",
+                          "How can I make my messages better?",
                         ].map((q, i) => (
                           <button
                             key={i}
                             onClick={() => {
                               setQuestion(q)
-                              // Optional: automatically trigger the question
-                              // setQuestion(q);
-                              // setTimeout(() => handleAskQuestion(), 100);
                             }}
                             className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md transition-colors"
                           >
@@ -196,6 +192,57 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Key Insights - Updated to use white metric cards */}
+              <div>
+                <h3 className="text-lg font-medium mb-4">Key Insights</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="mb-2 p-2 rounded-full bg-[#f0f0ff]">
+                          <BarChart className="h-5 w-5 text-[#4346ce]" />
+                        </div>
+                        <p className="text-sm text-gray-500 mb-1">Average CTR</p>
+                        <p className="text-3xl font-bold text-[#4346ce]">4.87%</p>
+                        <p className="text-green-500 text-xs flex items-center mt-1">
+                          <TrendingUp className="h-3 w-3 mr-1" /> 0.5% from last week
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="mb-2 p-2 rounded-full bg-[#f0f0ff]">
+                          <Activity className="h-5 w-5 text-[#4346ce]" />
+                        </div>
+                        <p className="text-sm text-gray-500 mb-1">Open Rate</p>
+                        <p className="text-3xl font-bold text-[#4346ce]">62%</p>
+                        <p className="text-green-500 text-xs flex items-center mt-1">
+                          <TrendingUp className="h-3 w-3 mr-1" /> 3% from last week
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="mb-2 p-2 rounded-full bg-[#f0f0ff]">
+                          <Users className="h-5 w-5 text-[#4346ce]" />
+                        </div>
+                        <p className="text-sm text-gray-500 mb-1">Conversion Rate</p>
+                        <p className="text-3xl font-bold text-[#4346ce]">2.3%</p>
+                        <p className="text-red-500 text-xs flex items-center mt-1">
+                          <TrendingDown className="h-3 w-3 mr-1" /> 0.2% from last week
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -363,7 +410,7 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
             <TabsContent value="recommendations" className="mt-6 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>AI-Powered Recommendations</CardTitle>
+                  <CardTitle>Recommendations</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
@@ -417,7 +464,7 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
                   <div className="mt-8 p-4 bg-pink-50 rounded-lg border border-pink-200">
                     <h3 className="font-medium text-lg flex items-center">
                       <Zap className="h-5 w-5 text-pink-500 mr-2" />
-                      AI-Generated Notification Suggestion
+                      Generated Notification Suggestion
                     </h3>
                     <p className="text-gray-600 mb-4">
                       Based on your audience behavior and top-performing notifications, we suggest:
@@ -452,7 +499,7 @@ export function AIInsightsPanel({ open, onClose }: AIInsightsPanelProps) {
         <div className="p-4 border-t bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              <span>Powered by OneSignal AI</span>
+              <span>Powered by OneSignal</span>
             </div>
             <Button variant="outline" className="border-pink-500 text-pink-500 hover:bg-pink-50">
               Export Insights

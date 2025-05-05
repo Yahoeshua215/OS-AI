@@ -163,7 +163,10 @@ export function Sidebar() {
           <div className="py-1">
             <button
               onClick={() => toggleMenu("delivery")}
-              className="flex items-center w-full px-3 py-2 text-sm rounded-md hover:bg-white/10"
+              className={cn(
+                "flex items-center w-full px-3 py-2 text-sm rounded-md hover:bg-white/10",
+                pathname?.startsWith("/sent-messages") && "bg-[#3a3a87] text-white",
+              )}
             >
               <Smartphone className="h-5 w-5 mr-3" />
               <span>Delivery</span>
@@ -173,6 +176,23 @@ export function Sidebar() {
                 <ChevronDown className="h-4 w-4 ml-auto" />
               )}
             </button>
+
+            {openMenus.delivery && (
+              <div className="ml-8 mt-1 space-y-1">
+                <NavItem
+                  href="/sent-messages"
+                  label="Sent Messages"
+                  isSubItem
+                  isActive={pathname === "/sent-messages"}
+                />
+                <NavItem
+                  href="/scheduled-messages"
+                  label="Scheduled Messages"
+                  isSubItem
+                  isActive={pathname === "/scheduled-messages"}
+                />
+              </div>
+            )}
           </div>
 
           <NavItem href="/analytics" icon={<BarChart className="h-5 w-5" />} label="Analytics" />

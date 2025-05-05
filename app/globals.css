@@ -46,3 +46,9 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 48%;
 }
+
+/* Add this to your existing globals.css */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(209, 213, 219, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(209, 213, 219, 0.1) 1px, transparent 1px);
+}
