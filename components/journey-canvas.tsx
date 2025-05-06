@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { MoreHorizontal, Plus, Minus, Maximize } from "lucide-react"
+import { MoreHorizontal, Plus, Minus, Maximize, Sparkles, X, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
 interface JourneyNode {
   id: string
@@ -28,18 +29,23 @@ interface JourneyNode {
     body?: string
     subject?: string // For email nodes
   }
+  reasoning?: string // Added reasoning field
 }
 
 interface JourneyCanvasProps {
   nodes: JourneyNode[]
   onNodesChange?: (nodes: JourneyNode[]) => void
+  useUserBehavior?: boolean // Added prop to indicate if user behavior is enabled
 }
 
-export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCanvasProps) {
+export function JourneyCanvas({ nodes: initialNodes, onNodesChange, useUserBehavior = false }: JourneyCanvasProps) {
   const [nodes, setNodes] = useState<JourneyNode[]>(initialNodes || [])
   const canvasRef = useRef<HTMLDivElement>(null)
   const [zoom, setZoom] = useState(1)
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+  const [showOptimizationPanel, setShowOptimizationPanel] = useState(false)
+  const [optimizationType, setOptimizationType] = useState<"timing" | "sequence" | "branching" | null>(null)
+  const [showInsightsPanel, setShowInsightsPanel] = useState(false)
 
   // Organize nodes in a vertical layout
   useEffect(() => {
@@ -77,7 +83,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
     branchMap: Map<string, { yes: string[]; no: string[] }>,
   ): JourneyNode[] => {
     const centerX = 550 // Center position for nodes
-    const verticalSpacing = 180 // Vertical spacing between nodes
+    const verticalSpacing = 220 // Increase vertical spacing between nodes (was 180)
     const horizontalSpacing = 300 // Horizontal spacing for branches
 
     const organizedNodes: JourneyNode[] = []
@@ -170,6 +176,51 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
     setZoom(1)
   }
 
+  // AI optimization functions
+  const handleOptimizeTiming = () => {
+    setOptimizationType("timing")
+    setShowOptimizationPanel(true)
+  }
+
+  const handleOptimizeSequence = () => {
+    setOptimizationType("sequence")
+    setShowOptimizationPanel(true)
+  }
+
+  const handleSuggestBranching = () => {
+    setOptimizationType("branching")
+    setShowOptimizationPanel(true)
+  }
+
+  const handleToggleInsights = () => {
+    setShowInsightsPanel(!showInsightsPanel)
+  }
+
+  const handleApplyChanges = (updatedNodes: JourneyNode[]) => {
+    // Example optimization: adjust wait times between messages
+    if (optimizationType === "timing") {
+      const optimizedNodes = nodes.map((node) => {
+        if (node.type === "wait") {
+          return {
+            ...node,
+            content: {
+              ...node.content,
+              waitDuration: "2 Days", // Optimized wait duration
+            },
+          }
+        }
+        return node
+      })
+
+      setNodes(optimizedNodes)
+      if (onNodesChange) {
+        onNodesChange(optimizedNodes)
+      }
+    }
+
+    setShowOptimizationPanel(false)
+  }
+
   // Render node based on type
   const renderNode = (node: JourneyNode) => {
     const nodeStyle = {
@@ -178,10 +229,33 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
       transform: "translateX(-50%)", // Center horizontally
     }
 
+    // Add info button if reasoning exists and user behavior is enabled
+    const renderInfoButton = () => {
+      if (useUserBehavior && node.reasoning) {
+        return (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 ml-1 text-blue-500"
+            onClick={() => {
+              // Show reasoning in a tooltip or modal
+              alert(node.reasoning)
+            }}
+          >
+            <Info className="h-4 w-4" />
+          </Button>
+        )
+      }
+      return null
+    }
+
     switch (node.type) {
       case "entrance":
         return (
-          <div className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px]" style={nodeStyle}>
+          <div
+            className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px] min-h-[120px]"
+            style={nodeStyle}
+          >
             <div className="p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded flex items-center justify-center mr-2">
@@ -196,6 +270,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
                   </svg>
                 </div>
                 <h3 className="font-medium">Entrance</h3>
+                {renderInfoButton()}
                 <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -214,9 +289,13 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
           </div>
         )
 
+      // Update other node types similarly with min-height
       case "wait":
         return (
-          <div className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px]" style={nodeStyle}>
+          <div
+            className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px] min-h-[120px]"
+            style={nodeStyle}
+          >
             <div className="p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 w-5 h-5 bg-amber-500 rounded flex items-center justify-center mr-2">
@@ -232,6 +311,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
                   </svg>
                 </div>
                 <h3 className="font-medium">Wait</h3>
+                {renderInfoButton()}
                 <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -243,7 +323,10 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
       case "push":
         return (
-          <div className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px]" style={nodeStyle}>
+          <div
+            className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px] min-h-[120px]"
+            style={nodeStyle}
+          >
             <div className="p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 w-5 h-5 bg-blue-600 rounded flex items-center justify-center mr-2">
@@ -265,6 +348,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
                   </svg>
                 </div>
                 <h3 className="font-medium">Push Notification</h3>
+                {renderInfoButton()}
                 <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -283,7 +367,10 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
       case "email":
         return (
-          <div className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px]" style={nodeStyle}>
+          <div
+            className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px] min-h-[120px]"
+            style={nodeStyle}
+          >
             <div className="p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 w-5 h-5 bg-blue-600 rounded flex items-center justify-center mr-2">
@@ -299,6 +386,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
                   </svg>
                 </div>
                 <h3 className="font-medium">Email</h3>
+                {renderInfoButton()}
                 <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -318,7 +406,10 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
       case "branch":
         return (
-          <div className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px]" style={nodeStyle}>
+          <div
+            className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px] min-h-[120px]"
+            style={nodeStyle}
+          >
             <div className="p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 w-5 h-5 bg-purple-500 rounded flex items-center justify-center mr-2">
@@ -333,6 +424,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
                   </svg>
                 </div>
                 <h3 className="font-medium">Yes/No Branch</h3>
+                {renderInfoButton()}
                 <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -344,7 +436,10 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
       case "exit":
         return (
-          <div className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px]" style={nodeStyle}>
+          <div
+            className="absolute bg-white rounded-lg shadow-sm border border-gray-200 w-[300px] min-h-[120px]"
+            style={nodeStyle}
+          >
             <div className="p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded flex items-center justify-center mr-2">
@@ -359,6 +454,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
                   </svg>
                 </div>
                 <h3 className="font-medium">Exit</h3>
+                {renderInfoButton()}
                 <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -406,7 +502,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
       if (!nextNode) return null
 
       const startX = node.position?.x || 0
-      const startY = (node.position?.y || 0) + 80 // Bottom of node
+      const startY = (node.position?.y || 0) + 100 // Increase bottom offset (was 80)
       const endX = nextNode.position?.x || 0
       const endY = nextNode.position?.y || 0 // Top of next node
 
@@ -422,19 +518,21 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
               left: `${startX}px`,
               top: `${startY}px`,
               height: `${endY - startY}px`,
+              transform: "translateX(-50%)", // Center the line
             }}
           />
 
           {/* Plus button at midpoint */}
           <div
-            className="absolute bg-white rounded-full border border-gray-300 w-6 h-6 flex items-center justify-center cursor-pointer"
+            className="absolute bg-white rounded-full border border-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer shadow-sm"
             style={{
-              left: `${startX - 3}px`,
-              top: `${midY - 3}px`,
+              left: `${startX}px`,
+              top: `${midY}px`,
+              transform: "translate(-50%, -50%)", // Center the button
               zIndex: 2,
             }}
           >
-            <Plus className="h-3 w-3 text-gray-500" />
+            <Plus className="h-4 w-4 text-gray-500" />
           </div>
         </div>
       )
@@ -446,7 +544,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
       const connections = []
       const startX = branchNode.position?.x || 0
-      const startY = (branchNode.position?.y || 0) + 80 // Bottom of branch node
+      const startY = (branchNode.position?.y || 0) + 100 // Increase bottom offset (was 80)
 
       // Yes branch
       if (branchNode.branches.yes && branchNode.branches.yes.length > 0) {
@@ -458,8 +556,8 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
           const endY = yesNode.position?.y || 0 // Top of yes node
 
           // Calculate midpoint for the plus button
-          const midX = (startX + endX) / 2
-          const midY = startY + (endY - startY) / 2
+          const midX = startX + (endX - startX) / 2
+          const midY = startY + 20 // Position on the horizontal part of the path
 
           connections.push(
             <div key={`branch-yes-${branchNode.id}-${yesNodeId}`}>
@@ -484,14 +582,15 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
               {/* Plus button at midpoint */}
               <div
-                className="absolute bg-white rounded-full border border-gray-300 w-6 h-6 flex items-center justify-center cursor-pointer"
+                className="absolute bg-white rounded-full border border-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer shadow-sm"
                 style={{
-                  left: `${midX - 3}px`,
-                  top: `${midY - 3}px`,
+                  left: `${midX}px`,
+                  top: `${midY}px`,
+                  transform: "translate(-50%, -50%)", // Center the button
                   zIndex: 2,
                 }}
               >
-                <Plus className="h-3 w-3 text-gray-500" />
+                <Plus className="h-4 w-4 text-gray-500" />
               </div>
             </div>,
           )
@@ -508,8 +607,8 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
           const endY = noNode.position?.y || 0 // Top of no node
 
           // Calculate midpoint for the plus button
-          const midX = (startX + endX) / 2
-          const midY = startY + (endY - startY) / 2
+          const midX = startX + (endX - startX) / 2
+          const midY = startY + 20 // Position on the horizontal part of the path
 
           connections.push(
             <div key={`branch-no-${branchNode.id}-${noNodeId}`}>
@@ -534,14 +633,15 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
 
               {/* Plus button at midpoint */}
               <div
-                className="absolute bg-white rounded-full border border-gray-300 w-6 h-6 flex items-center justify-center cursor-pointer"
+                className="absolute bg-white rounded-full border border-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer shadow-sm"
                 style={{
-                  left: `${midX - 3}px`,
-                  top: `${midY - 3}px`,
+                  left: `${midX}px`,
+                  top: `${midY}px`,
+                  transform: "translate(-50%, -50%)", // Center the button
                   zIndex: 2,
                 }}
               >
-                <Plus className="h-3 w-3 text-gray-500" />
+                <Plus className="h-4 w-4 text-gray-500" />
               </div>
             </div>,
           )
@@ -554,6 +654,182 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
     return [...regularConnections, ...branchConnections]
   }
 
+  // Render optimization panel
+  const renderOptimizationPanel = () => {
+    if (!showOptimizationPanel) return null
+
+    let title = "Journey Optimization"
+    let description = "Optimize your journey for better performance."
+    let recommendations = []
+
+    switch (optimizationType) {
+      case "timing":
+        title = "Timing Optimization"
+        description = "Optimize wait times between messages for better engagement."
+        recommendations = [
+          {
+            suggestion: "Reduce wait time between first and second message to 2 days",
+            reasoning:
+              "Based on user behavior data, 73% of your users who convert do so within 48 hours of the first message.",
+          },
+          {
+            suggestion: "Increase wait time before exit to 5 days",
+            reasoning:
+              "Analysis shows users who don't engage within 5 days are unlikely to convert (less than 3% conversion rate).",
+          },
+          {
+            suggestion: "Send push notifications in the morning (8-10 AM)",
+            reasoning: "Your audience shows 42% higher open rates during morning hours compared to afternoon sends.",
+          },
+        ]
+        break
+      case "sequence":
+        title = "Sequence Optimization"
+        description = "Optimize the sequence of messages for better conversion."
+        recommendations = [
+          {
+            suggestion: "Move email before push notification",
+            reasoning:
+              "Users who receive an email first show 27% higher engagement with subsequent push notifications.",
+          },
+          {
+            suggestion: "Add a reminder message 24 hours before expiration",
+            reasoning: "Last-minute reminders have increased conversion by 35% in similar journeys.",
+          },
+          {
+            suggestion: "Add social proof content to the second message",
+            reasoning: "Based on your audience segment behavior, testimonials increase conversion rates by 22%.",
+          },
+        ]
+        break
+      case "branching":
+        title = "Branching Suggestions"
+        description = "Add conditional branches to personalize the journey."
+        recommendations = [
+          {
+            suggestion: "Add a branch based on user's engagement with previous message",
+            reasoning:
+              "Users who opened but didn't click through need different messaging (67% respond better to benefit-focused content).",
+          },
+          {
+            suggestion: "Create a special path for high-value customers",
+            reasoning:
+              "Your top 20% of customers have different engagement patterns and respond 3x better to exclusive offers.",
+          },
+          {
+            suggestion: "Add a re-engagement branch for users who haven't opened messages",
+            reasoning:
+              "Historical data shows 18% of non-responders can be recovered with a different channel or subject line.",
+          },
+        ]
+        break
+    }
+
+    return (
+      <div className="fixed bottom-4 right-4 w-80 z-10">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">{title}</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setShowOptimizationPanel(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <p className="font-medium text-sm">Recommendations:</p>
+              <div className="space-y-4">
+                {recommendations.map((rec, index) => (
+                  <div key={index} className="space-y-1">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <p className="ml-2 font-medium text-sm">{rec.suggestion}</p>
+                    </div>
+                    <div className="ml-7 text-xs text-gray-600 border-l-2 border-gray-200 pl-2">{rec.reasoning}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-6">
+                <Button variant="outline" size="sm" onClick={() => setShowOptimizationPanel(false)}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={() => handleApplyChanges(nodes)}>
+                  Apply Changes
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Render insights panel
+  const renderInsightsPanel = () => {
+    if (!showInsightsPanel || !useUserBehavior) return null
+
+    return (
+      <div className="fixed top-20 right-4 w-80 z-10">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Journey Insights</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setShowInsightsPanel(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <CardDescription>Based on user behavior patterns</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <p className="ml-2 font-medium text-sm">Optimal journey length</p>
+                  </div>
+                  <div className="ml-7 text-xs text-gray-600 border-l-2 border-gray-200 pl-2">
+                    Your users typically engage with 3-4 messages before conversion or drop-off.
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <p className="ml-2 font-medium text-sm">Best performing channel</p>
+                  </div>
+                  <div className="ml-7 text-xs text-gray-600 border-l-2 border-gray-200 pl-2">
+                    Push notifications have 38% higher engagement than emails for this audience segment.
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <p className="ml-2 font-medium text-sm">Optimal timing</p>
+                  </div>
+                  <div className="ml-7 text-xs text-gray-600 border-l-2 border-gray-200 pl-2">
+                    Morning sends (8-10 AM) perform 42% better than afternoon or evening sends.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div
       className="relative w-full h-full overflow-auto"
@@ -562,6 +838,22 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
         backgroundSize: "20px 20px",
       }}
     >
+      {/* Canvas Header */}
+      <div className="sticky top-0 z-10 w-full bg-white border-b border-gray-200 px-4 py-2 flex justify-between items-center">
+        <h2 className="text-lg font-medium">Journey Canvas</h2>
+        <div className="flex items-center gap-2">
+          {useUserBehavior && (
+            <button
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+              onClick={handleToggleInsights}
+            >
+              <Info className="h-3.5 w-3.5" />
+              <span>Behaviours used to build this Journey</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       <div
         ref={canvasRef}
         className="relative min-h-[1500px]"
@@ -590,6 +882,12 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange }: JourneyCan
           <Maximize className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Optimization Panel */}
+      {renderOptimizationPanel()}
+
+      {/* Insights Panel */}
+      {renderInsightsPanel()}
     </div>
   )
 }

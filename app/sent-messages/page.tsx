@@ -403,9 +403,7 @@ export default function SentMessagesPage() {
               ) : (
                 <>
                   <div className="mb-6">
-                    <p className="text-gray-600">
-                      AI-powered insights and recommendations based on your message performance.
-                    </p>
+                    <p className="text-gray-600">Insights and recommendations based on your message performance.</p>
                   </div>
 
                   <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
@@ -609,7 +607,7 @@ export default function SentMessagesPage() {
                     <TabsContent value="recommendations" className="mt-6 space-y-6">
                       <Card>
                         <CardHeader>
-                          <CardTitle>AI-Powered Recommendations</CardTitle>
+                          <CardTitle>Recommendations</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-6">
@@ -663,7 +661,7 @@ export default function SentMessagesPage() {
                           <div className="mt-8 p-4 bg-[#ececfc] rounded-lg border border-[#c0c1f5]">
                             <h3 className="font-medium text-lg flex items-center">
                               <Sparkles className="h-5 w-5 text-[#4346ce] mr-2" />
-                              AI-Generated Message Template
+                              Generated Message Template
                             </h3>
                             <p className="text-gray-600 mb-4">
                               Based on your highest performing messages, we suggest this template:

@@ -194,7 +194,7 @@ export default function NewPushPage() {
                       className="bg-[#f3f0f4] bg-opacity-50 rounded-md p-2 flex items-center justify-between cursor-pointer hover:bg-opacity-70 transition-colors"
                       onClick={handleOpenAIPanel}
                     >
-                      <span className="text-sm text-[#303293]">Use Smart Assist to create or refine your content</span>
+                      <span className="text-sm text-[#303293]">create / refine content</span>
                       <Sparkles className="h-4 w-4 text-[#303293]" />
                     </div>
 

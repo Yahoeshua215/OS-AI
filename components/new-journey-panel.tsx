@@ -7,6 +7,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import { Switch } from "@/components/ui/switch"
 
 interface NewJourneyPanelProps {
   open: boolean
@@ -19,6 +20,7 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
   const [journeyDescription, setJourneyDescription] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [useUserBehavior, setUseUserBehavior] = useState(true)
 
   const handleGenerateJourney = async () => {
     if (!journeyDescription.trim()) {
@@ -35,7 +37,10 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ description: journeyDescription }),
+        body: JSON.stringify({
+          description: journeyDescription,
+          useUserBehavior: useUserBehavior,
+        }),
       })
 
       const data = await response.json()
@@ -62,6 +67,7 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
           name: "New AI Journey",
           nodes: data.journeyNodes,
           description: journeyDescription,
+          useUserBehavior: useUserBehavior,
         }),
       )
 
@@ -85,6 +91,7 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
         name: template.charAt(0).toUpperCase() + template.slice(1) + " Journey",
         nodes: [],
         description: "",
+        useUserBehavior: useUserBehavior,
       }),
     )
     router.push(`/journeys/editor/${journeyId}`)
@@ -103,18 +110,28 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
                 <span className="sr-only">Close</span>
               </Button>
             </div>
+            <div className="flex items-center mt-4 space-x-2">
+              <Switch id="user-behavior" checked={useUserBehavior} onCheckedChange={setUseUserBehavior} />
+              <Label htmlFor="user-behavior" className="text-sm">
+                Utilize user behavior patterns to help define Journey
+              </Label>
+            </div>
           </div>
 
           <div className="flex-1 overflow-auto p-6">
             {showAIInput ? (
               <div className="border rounded-lg p-6 mb-6">
-                <h3 className="text-xl font-bold mb-3">Describe your journey</h3>
+                <div className="flex justify-between mb-3">
+                  <h3 className="text-xl font-bold">Describe your journey</h3>
+                  <div className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 text-[#4954e6]" />
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="journey-description">Journey Description</Label>
                     <Textarea
                       id="journey-description"
-                      placeholder="Describe the journey you want to create (e.g., 'A re-engagement journey for users who haven't opened the app in 30 days')"
+                      placeholder="Describe the journey you want to create (e.g., 'A re-engagement journey with 3 push notifications and 2 emails')"
                       className="min-h-[120px]"
                       value={journeyDescription}
                       onChange={(e) => setJourneyDescription(e.target.value)}
@@ -125,11 +142,11 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
                     <p className="text-sm text-gray-500 mb-2">Examples (click to use):</p>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        "Re-engagement journey for inactive users (30 days)",
-                        "Onboarding journey with 3 educational notifications",
-                        "Cart abandonment with timed reminders",
-                        "Milestone celebration journey",
-                        "Weekly newsletter sequence",
+                        "Re-engagement journey with 3 push notifications over 2 weeks",
+                        "Onboarding journey with 2 emails and 2 push notifications",
+                        "Cart abandonment with 3 reminders and 1 wait period",
+                        "Milestone celebration journey with 5 notifications",
+                        "Weekly newsletter sequence with 4 emails",
                       ].map((example, i) => (
                         <button
                           key={i}
@@ -143,9 +160,9 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
                   </div>
 
                   {error && <p className="text-red-500 text-sm">{error}</p>}
-                  <div className="flex justify-end space-x-2">
+                  <div className="flex justify-between">
                     <Button variant="outline" onClick={() => setShowAIInput(false)}>
-                      Cancel
+                      Back
                     </Button>
                     <Button
                       className="bg-[#4954e6] hover:bg-[#3a43c9]"
@@ -159,25 +176,51 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
                 </div>
               </div>
             ) : (
-              <>
-                <div
-                  className="bg-gray-50 rounded-lg p-4 mb-6 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => setShowAIInput(true)}
-                >
-                  <p className="text-[#4954e6] font-medium">Describe your journey</p>
-                  <Sparkles className="h-5 w-5 text-[#4954e6]" />
+              <div className="space-y-6">
+                {/* Start from scratch card - full width */}
+                <div className="border rounded-lg p-6 w-full">
+                  <div className="flex justify-between mb-3">
+                    <h3 className="text-xl font-bold">Start from scratch</h3>
+                    <div className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M12 4V20M4 12H20"
+                          stroke="#6366F1"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 mb-8">Build your own Journey from the ground up.</p>
+                  <div className="flex justify-end">
+                    <Button
+                      className="bg-white text-[#4954e6] border border-[#4954e6] hover:bg-gray-50"
+                      onClick={() => handleSelectTemplate("scratch")}
+                    >
+                      Select
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
-                  {/* Start from scratch card */}
-                  <div className="border rounded-lg p-6">
-                    <h3 className="text-xl font-bold mb-3">Start from scratch</h3>
-                    <p className="text-gray-700 mb-8">Build your own Journey from the ground up.</p>
+                  {/* AI Journey Description Card */}
+                  <div
+                    className="border rounded-lg p-6 cursor-pointer hover:border-[#4954e6] transition-colors"
+                    onClick={() => setShowAIInput(true)}
+                  >
+                    <div className="flex justify-between mb-3">
+                      <h3 className="text-xl font-bold">Describe your journey</h3>
+                      <div className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                        <Sparkles className="h-5 w-5 text-[#4954e6]" />
+                      </div>
+                    </div>
+                    <p className="text-gray-700 mb-8">
+                      Tell us what you want to achieve and we'll create a journey for you.
+                    </p>
                     <div className="flex justify-end">
-                      <Button
-                        className="bg-white text-[#4954e6] border border-[#4954e6] hover:bg-gray-50"
-                        onClick={() => handleSelectTemplate("scratch")}
-                      >
+                      <Button className="bg-white text-[#4954e6] border border-[#4954e6] hover:bg-gray-50">
                         Select
                       </Button>
                     </div>
@@ -287,7 +330,7 @@ export function NewJourneyPanel({ open, onOpenChange }: NewJourneyPanelProps) {
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
 

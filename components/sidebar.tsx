@@ -4,9 +4,9 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {
-  Bell,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -16,10 +16,10 @@ import {
   Mail,
   MessageSquare,
   Package,
-  Settings,
   Smartphone,
   Users,
   BarChart,
+  Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -30,7 +30,6 @@ export function Sidebar() {
     messages: true,
     audience: false,
     delivery: false,
-    settings: false,
   })
 
   // Automatically open the messages menu if we're on a messages-related page
@@ -70,11 +69,10 @@ export function Sidebar() {
 
   return (
     <div className="w-[230px] bg-[#0a0a2e] text-white flex flex-col h-full">
-      <div className="p-4 flex items-center">
-        <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-          <Bell className="h-5 w-5 text-[#0a0a2e]" />
+      <div className="w-full px-6 py-4">
+        <div className="relative w-full aspect-[3/1]">
+          <Image src="/onesignal-logo.svg" alt="OneSignal Logo" fill className="object-contain" priority />
         </div>
-        <span className="font-semibold text-lg">OneSignal</span>
       </div>
 
       <div className="px-4 py-2">
@@ -197,38 +195,14 @@ export function Sidebar() {
 
           <NavItem href="/analytics" icon={<BarChart className="h-5 w-5" />} label="Analytics" />
 
-          <div className="py-1">
-            <button
-              onClick={() => toggleMenu("settings")}
-              className="flex items-center w-full px-3 py-2 text-sm rounded-md hover:bg-white/10"
-            >
-              <Settings className="h-5 w-5 mr-3" />
-              <span>Settings</span>
-              {openMenus.settings ? (
-                <ChevronUp className="h-4 w-4 ml-auto" />
-              ) : (
-                <ChevronDown className="h-4 w-4 ml-auto" />
-              )}
-            </button>
-
-            {openMenus.settings && (
-              <div className="ml-8 mt-1 space-y-1">
-                <NavItem
-                  href="/settings/supabase"
-                  label="Supabase"
-                  isSubItem
-                  isActive={pathname === "/settings/supabase"}
-                />
-                <NavItem
-                  href="/settings/general"
-                  label="General"
-                  isSubItem
-                  isActive={pathname === "/settings/general"}
-                />
-                <NavItem href="/settings/api" label="API Keys" isSubItem isActive={pathname === "/settings/api"} />
-              </div>
-            )}
-          </div>
+          {/* New OneSignal Intelligence navigation item */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("toggle-intelligence"))}
+            className="flex items-center w-full px-3 py-2 text-sm rounded-md hover:bg-white/10"
+          >
+            <Sparkles className="h-5 w-5 mr-3 text-yellow-300" />
+            <span>OneSignal Intelligence</span>
+          </button>
         </nav>
       </div>
 

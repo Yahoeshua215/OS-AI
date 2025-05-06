@@ -5,15 +5,12 @@ import { useRouter } from "next/navigation"
 import { PushNotificationsContent } from "@/components/push-notifications-content"
 import { Sidebar } from "@/components/sidebar"
 import { NewMessageSidePanel } from "@/components/new-message-dialog"
-import { AIInsightsPanel } from "@/components/ai-insights-panel"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Sparkles } from "lucide-react"
 
 export default function PushPage() {
   const router = useRouter()
   const [newMessageOpen, setNewMessageOpen] = useState(false)
-  const [insightsOpen, setInsightsOpen] = useState(false)
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -37,14 +34,6 @@ export default function PushPage() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold">Push Notifications</h1>
             <div className="flex space-x-3">
-              <Button
-                variant="outline"
-                className="border-pink-500 text-pink-500 hover:bg-pink-50 flex items-center"
-                onClick={() => setInsightsOpen(true)}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                AI Insights
-              </Button>
               <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setNewMessageOpen(true)}>
                 New Message ▼
               </Button>
@@ -54,7 +43,6 @@ export default function PushPage() {
           <PushNotificationsContent />
         </main>
         <NewMessageSidePanel open={newMessageOpen} onClose={() => setNewMessageOpen(false)} />
-        <AIInsightsPanel open={insightsOpen} onClose={() => setInsightsOpen(false)} />
       </div>
     </div>
   )
