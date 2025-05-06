@@ -773,23 +773,28 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange, useUserBehav
     if (!showInsightsPanel || !useUserBehavior) return null
 
     return (
-      <div className="fixed top-20 right-4 w-80 z-10">
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Journey Insights</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => setShowInsightsPanel(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <CardDescription>Based on user behavior patterns</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+      <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="bg-black/20 absolute inset-0" onClick={() => setShowInsightsPanel(false)}></div>
+
+        <div className="relative w-full max-w-md bg-white shadow-lg flex flex-col h-full overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-lg font-semibold flex items-center">
+              <Sparkles className="h-5 w-5 text-[#4346ce] mr-2" />
+              Journey Insights
+            </h2>
+            <Button variant="outline" onClick={() => setShowInsightsPanel(false)}>
+              Close
+            </Button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <p className="text-gray-600 mb-6">Insights based on user behavior patterns that influenced this journey.</p>
+
+            <div className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-1">
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                    <div className="flex-shrink-0 h-5 w-5 text-[#4346ce] mt-0.5">
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <p className="ml-2 font-medium text-sm">Optimal journey length</p>
@@ -801,7 +806,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange, useUserBehav
 
                 <div className="space-y-1">
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                    <div className="flex-shrink-0 h-5 w-5 text-[#4346ce] mt-0.5">
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <p className="ml-2 font-medium text-sm">Best performing channel</p>
@@ -813,7 +818,7 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange, useUserBehav
 
                 <div className="space-y-1">
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5">
+                    <div className="flex-shrink-0 h-5 w-5 text-[#4346ce] mt-0.5">
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <p className="ml-2 font-medium text-sm">Optimal timing</p>
@@ -822,10 +827,47 @@ export function JourneyCanvas({ nodes: initialNodes, onNodesChange, useUserBehav
                     Morning sends (8-10 AM) perform 42% better than afternoon or evening sends.
                   </div>
                 </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-[#4346ce] mt-0.5">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <p className="ml-2 font-medium text-sm">User behavior patterns</p>
+                  </div>
+                  <div className="ml-7 text-xs text-gray-600 border-l-2 border-gray-200 pl-2">
+                    Users who engage with your first message are 3.2x more likely to convert if they receive a follow-up
+                    within 48 hours.
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-[#4346ce] mt-0.5">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <p className="ml-2 font-medium text-sm">Content effectiveness</p>
+                  </div>
+                  <div className="ml-7 text-xs text-gray-600 border-l-2 border-gray-200 pl-2">
+                    Messages with personalized content show 27% higher engagement than generic messages.
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="font-medium text-sm mb-2 flex items-center">
+                  <Sparkles className="h-4 w-4 text-[#4346ce] mr-2" />
+                  How this journey was optimized
+                </h3>
+                <p className="text-xs text-gray-600">
+                  This journey was automatically optimized based on historical user behavior data from similar
+                  campaigns. The sequence, timing, and content recommendations are tailored to maximize engagement for
+                  your specific audience segments.
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }

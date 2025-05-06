@@ -11,7 +11,6 @@ import {
   ChevronUp,
   ExternalLink,
   Grid,
-  HelpCircle,
   LifeBuoy,
   Mail,
   MessageSquare,
@@ -196,6 +195,7 @@ export function Sidebar() {
           <NavItem href="/analytics" icon={<BarChart className="h-5 w-5" />} label="Analytics" />
 
           {/* New OneSignal Intelligence navigation item */}
+          {/*
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("toggle-intelligence"))}
             className="flex items-center w-full px-3 py-2 text-sm rounded-md hover:bg-white/10"
@@ -203,6 +203,7 @@ export function Sidebar() {
             <Sparkles className="h-5 w-5 mr-3 text-yellow-300" />
             <span>OneSignal Intelligence</span>
           </button>
+          */}
         </nav>
       </div>
 
@@ -222,9 +223,12 @@ export function Sidebar() {
       </div>
 
       <div className="p-4 flex items-center border-t border-gray-700">
-        <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-          <HelpCircle className="h-5 w-5 text-[#0a0a2e]" />
-        </div>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("toggle-intelligence"))}
+          className="bg-white rounded-full w-8 h-8 flex items-center justify-center mr-2 hover:bg-gray-200 transition-colors"
+        >
+          <Sparkles className="h-5 w-5 text-[#0a0a2e]" />
+        </button>
         <ExternalLink className="h-5 w-5 ml-auto" />
       </div>
     </div>

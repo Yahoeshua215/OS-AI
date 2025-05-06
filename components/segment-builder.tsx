@@ -22,8 +22,6 @@ import {
   Activity,
   Info,
   X,
-  ChevronDown,
-  ChevronRight,
   Sparkles,
   Loader2,
 } from "lucide-react"
@@ -610,18 +608,22 @@ export function SegmentBuilder({ initialFilters, initialName, onSave, onClose }:
       {/* AI Prompt Banner */}
       <div className="border rounded-lg overflow-hidden">
         <div
-          className={`bg-gradient-to-r from-pink-50 to-indigo-50 border-b p-3 flex items-center justify-between cursor-pointer ${aiPromptExpanded ? "border-b-pink-200" : ""}`}
+          className="bg-indigo-50 py-2 px-3 flex items-center justify-between cursor-pointer"
           onClick={() => setAiPromptExpanded(!aiPromptExpanded)}
         >
+          <h3 className="text-sm text-gray-700">Describe the type of segment you would like to have</h3>
           <div className="flex items-center">
-            <Sparkles className="h-5 w-5 text-pink-500 mr-2" />
-            <h3 className="font-medium">Describe the type of segment you would like to have</h3>
+            <button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-1 px-2 rounded flex items-center"
+              onClick={(e) => {
+                e.stopPropagation()
+                setAiPromptExpanded(true)
+              }}
+            >
+              Select
+              <Sparkles className="h-3 w-3 ml-1" />
+            </button>
           </div>
-          {aiPromptExpanded ? (
-            <ChevronDown className="h-5 w-5 text-gray-500" />
-          ) : (
-            <ChevronRight className="h-5 w-5 text-gray-500" />
-          )}
         </div>
 
         {aiPromptExpanded && (
@@ -668,7 +670,7 @@ export function SegmentBuilder({ initialFilters, initialName, onSave, onClose }:
                   handleGenerateFilters()
                 }}
                 disabled={isGenerating || !aiPromptDescription.trim()}
-                className="w-full bg-pink-600 hover:bg-pink-700"
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
               >
                 {isGenerating ? (
                   <>
@@ -684,9 +686,9 @@ export function SegmentBuilder({ initialFilters, initialName, onSave, onClose }:
               </Button>
 
               {aiResponse && (
-                <div className="p-4 bg-pink-50 rounded-lg border border-pink-200">
+                <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
                   <div className="flex items-start">
-                    <Sparkles className="h-5 w-5 text-pink-500 mt-0.5 mr-2" />
+                    <Sparkles className="h-5 w-5 text-indigo-600 mt-0.5 mr-2" />
                     <div className="flex-1">
                       <p className="text-gray-700">{aiResponse}</p>
                     </div>

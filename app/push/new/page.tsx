@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,20 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDown, Upload, Wand2, Sparkles, LayoutPanelLeft, Eye } from "lucide-react"
+import {
+  ChevronDown,
+  Upload,
+  Wand2,
+  Sparkles,
+  LayoutPanelLeft,
+  Eye,
+  Calendar,
+  Info,
+  HelpCircle,
+  Clock,
+  TrendingUp,
+  BarChart,
+} from "lucide-react"
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AINotificationPanel } from "@/components/ai-notification-panel"
@@ -31,6 +44,13 @@ export default function NewPushPage() {
     url: "",
   })
 
+  // Delivery schedule state
+  const [deliveryType, setDeliveryType] = useState("immediately")
+  const [scheduledDate, setScheduledDate] = useState("")
+  const [optimizationType, setOptimizationType] = useState("same-time")
+  const [overrideThrottling, setOverrideThrottling] = useState(false)
+  const [intelligentDeliveryInfo, setIntelligentDeliveryInfo] = useState<string | null>(null)
+
   // Refs for the message assist triggers
   const titleAssistRef = useRef<RefreshVariationsButtonRef>(null)
   const subtitleAssistRef = useRef<RefreshVariationsButtonRef>(null)
@@ -40,6 +60,21 @@ export default function NewPushPage() {
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Set current date/time as default for scheduled date
+  useEffect(() => {
+    const now = new Date()
+    now.setHours(now.getHours() + 1)
+    now.setMinutes(0)
+
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, "0")
+    const day = String(now.getDate()).padStart(2, "0")
+    const hours = String(now.getHours()).padStart(2, "0")
+    const minutes = String(now.getMinutes()).padStart(2, "0")
+
+    setScheduledDate(`${year}-${month}-${day}T${hours}:${minutes}`)
+  }, [])
 
   const updateNotification = (field: string, value: string) => {
     setNotification((prev) => ({ ...prev, [field]: value }))
@@ -98,6 +133,62 @@ export default function NewPushPage() {
     if (messageAssistRef.current) {
       messageAssistRef.current.openPopover()
     }
+  }
+
+  // Handle optimization type change
+  const handleOptimizationTypeChange = (value: string) => {
+    setOptimizationType(value)
+
+    if (value === "intelligent-delivery") {
+      // Generate intelligent delivery recommendation based on notification title
+      const title = notification.title.toLowerCase()
+
+      if (title.includes("sale") || title.includes("discount") || title.includes("offer") || title.includes("deal")) {
+        setIntelligentDeliveryInfo(
+          "Based on your past campaigns, promotional messages perform best when sent on Thursday between 11am-2pm local time. Your similar campaigns saw a 27% higher open rate during these times.",
+        )
+      } else if (title.includes("reminder") || title.includes("don't forget") || title.includes("limited time")) {
+        setIntelligentDeliveryInfo(
+          "Reminder notifications perform best when sent on weekdays between 9am-10am local time. Your past reminder campaigns saw 34% higher engagement during morning hours.",
+        )
+      } else if (title.includes("update") || title.includes("new") || title.includes("feature")) {
+        setIntelligentDeliveryInfo(
+          "Product update notifications perform best when sent on Tuesday or Wednesday between 2pm-5pm local time. Your users are 42% more likely to engage with product updates during these times.",
+        )
+      } else if (title.includes("welcome") || title.includes("thank you") || title.includes("thanks")) {
+        setIntelligentDeliveryInfo(
+          "Welcome and thank you messages perform best when sent immediately after the triggering action. For scheduled campaigns, early evening hours (6pm-8pm local time) show 31% higher engagement.",
+        )
+      } else if (title.includes("back") || title.includes("miss") || title.includes("return")) {
+        setIntelligentDeliveryInfo(
+          "Re-engagement messages perform best when sent on weekends or weekday evenings (after 6pm local time). Your past re-engagement campaigns saw 38% higher conversion rates during these periods.",
+        )
+      } else {
+        setIntelligentDeliveryInfo(
+          "Based on your audience behavior patterns, this type of message is likely to perform best when delivered between 11am-2pm on weekdays. We'll optimize delivery for each user's local time zone.",
+        )
+      }
+    } else {
+      setIntelligentDeliveryInfo(null)
+    }
+  }
+
+  // Format date for display
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return ""
+
+    const date = new Date(dateString)
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      timeZoneName: "short",
+    }
+
+    return date.toLocaleDateString("en-US", options)
   }
 
   return (
@@ -452,6 +543,215 @@ export default function NewPushPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Schedule Card */}
+            <div className="bg-white p-6 rounded-lg border border-[#e5e8eb]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-lg font-medium mb-4 text-[#212121]">3. Delivery Schedule</h2>
+
+                  <div className="mb-6">
+                    <div className="flex items-center mb-2">
+                      <span className="text-[#212121] font-medium">When should this message start sending?</span>
+                      <button type="button" className="ml-2 text-[#5d6974]">
+                        <HelpCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <RadioGroup value={deliveryType} onValueChange={setDeliveryType} className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="immediately"
+                          id="immediately"
+                          className="border-[#303293] text-[#303293]"
+                        />
+                        <Label htmlFor="immediately" className="text-[#212121]">
+                          Immediately
+                        </Label>
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="specific-time"
+                            id="specific-time"
+                            className="border-[#303293] text-[#303293]"
+                          />
+                          <Label htmlFor="specific-time" className="text-[#212121]">
+                            Specific Time
+                          </Label>
+                        </div>
+                        {deliveryType === "specific-time" && (
+                          <div className="ml-6">
+                            <div className="relative">
+                              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#5d6974]" />
+                              <Input
+                                type="datetime-local"
+                                value={scheduledDate}
+                                onChange={(e) => setScheduledDate(e.target.value)}
+                                className="pl-10 border-[#cbd1d7] focus-visible:ring-[#303293]"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="flex items-center mb-2">
+                      <span className="text-[#212121] font-medium">Per user optimization?</span>
+                      <button type="button" className="ml-2 text-[#5d6974]">
+                        <HelpCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <RadioGroup
+                      value={optimizationType}
+                      onValueChange={handleOptimizationTypeChange}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="same-time" id="same-time" className="border-[#303293] text-[#303293]" />
+                        <Label htmlFor="same-time" className="text-[#212121]">
+                          Send to everyone at the same time
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="intelligent-delivery"
+                          id="intelligent-delivery"
+                          className="border-[#303293] text-[#303293]"
+                          disabled={!notification.title} // Disable if no title is provided
+                        />
+                        <div className="flex flex-col">
+                          <Label
+                            htmlFor="intelligent-delivery"
+                            className={`flex items-center ${!notification.title ? "text-[#a0a0a0]" : "text-[#212121]"}`}
+                          >
+                            Intelligent Delivery (recommended)
+                            <button type="button" className="ml-2 text-[#5d6974]">
+                              <HelpCircle className="h-4 w-4" />
+                            </button>
+                          </Label>
+                          {!notification.title && (
+                            <span className="text-xs text-[#e54b4d]">
+                              Please fill in the notification title to enable intelligent delivery
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="custom-timezone"
+                          id="custom-timezone"
+                          className="border-[#303293] text-[#303293]"
+                        />
+                        <div className="flex items-center">
+                          <Label htmlFor="custom-timezone" className="text-[#212121]">
+                            Custom time per user timezone
+                          </Label>
+                          <button type="button" className="ml-2 text-[#5d6974]">
+                            <HelpCircle className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="override-throttling"
+                      checked={overrideThrottling}
+                      onCheckedChange={(checked) => setOverrideThrottling(checked === true)}
+                      className="border-[#cbd1d7] text-[#303293] data-[state=checked]:bg-[#303293] data-[state=checked]:text-white"
+                    />
+                    <div className="flex items-center">
+                      <Label htmlFor="override-throttling" className="text-[#212121]">
+                        Override throttling settings (1,000 per minute)
+                      </Label>
+                      <button type="button" className="ml-2 text-[#5d6974]">
+                        <HelpCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  {intelligentDeliveryInfo ? (
+                    <div className="bg-[#f3f0f4] p-4 rounded-lg border border-[#e5e8eb] h-full">
+                      <div className="flex items-start mb-4">
+                        <Info className="h-5 w-5 text-[#303293] mt-0.5 mr-2 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-medium text-[#212121] mb-1">Intelligent Delivery Recommendation</h3>
+                          <p className="text-sm text-[#5d6974]">
+                            {deliveryType === "specific-time" && scheduledDate ? (
+                              <>
+                                Message will start sending {formatDateForDisplay(scheduledDate)} with a limit of ~1,000
+                                per minute.
+                              </>
+                            ) : (
+                              <>Message will start sending immediately with a limit of ~1,000 per minute.</>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-md border border-[#e5e8eb] mb-4">
+                        <div className="flex items-start">
+                          <TrendingUp className="h-4 w-4 text-[#303293] mt-0.5 mr-2 flex-shrink-0" />
+                          <p className="text-sm">{intelligentDeliveryInfo}</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-md border border-[#e5e8eb]">
+                        <div className="flex items-start">
+                          <Clock className="h-4 w-4 text-[#303293] mt-0.5 mr-2 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium mb-1">How Intelligent Delivery works:</p>
+                            <p className="text-sm text-[#5d6974]">
+                              Our intelligent system analyzes your past campaign performance and user behavior patterns
+                              to determine the optimal delivery time for each user, maximizing engagement and conversion
+                              rates.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex items-center">
+                        <BarChart className="h-4 w-4 text-[#303293] mr-2" />
+                        <span className="text-xs text-[#5d6974]">
+                          Based on analysis of your past 90 days of campaign data
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-[#f3f0f4] p-4 rounded-lg border border-[#e5e8eb] h-full flex items-center justify-center">
+                      <div className="text-center max-w-xs">
+                        <Info className="h-8 w-8 text-[#5d6974] mx-auto mb-2" />
+                        <h3 className="font-medium text-[#212121] mb-1">Delivery Information</h3>
+                        <p className="text-sm text-[#5d6974]">
+                          {deliveryType === "specific-time" && scheduledDate ? (
+                            <>
+                              Message will start sending {formatDateForDisplay(scheduledDate)} with a limit of ~1,000
+                              per minute.
+                            </>
+                          ) : (
+                            <>Message will start sending immediately with a limit of ~1,000 per minute.</>
+                          )}
+                        </p>
+
+                        {notification.title && (
+                          <p className="mt-4 text-sm text-[#303293]">
+                            Select "Intelligent Delivery" to get AI-powered recommendations based on your notification
+                            content and past performance data.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

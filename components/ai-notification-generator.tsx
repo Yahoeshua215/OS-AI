@@ -797,7 +797,7 @@ export function AINotificationGenerator({
                     <Button
                       onClick={generateNotifications}
                       disabled={isGenerating || !description.trim()}
-                      className="w-full bg-pink-600 hover:bg-pink-700"
+                      className="w-full bg-[#303293] hover:bg-[#212366]"
                     >
                       {isGenerating ? (
                         <>
@@ -917,7 +917,7 @@ export function AINotificationGenerator({
                     <Button
                       onClick={generateNotifications}
                       disabled={isGenerating}
-                      className="w-full bg-pink-600 hover:bg-pink-700"
+                      className="w-full bg-[#303293] hover:bg-[#212366]"
                     >
                       {isGenerating ? (
                         <>
@@ -1050,7 +1050,7 @@ export function AINotificationGenerator({
             {generatedOptions.map((option, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-4 mb-4 ${selectedOption === index ? "border-pink-500 bg-pink-50" : "border-gray-200"}`}
+                className={`border rounded-lg p-4 mb-4 ${selectedOption === index ? "border-[#303293] bg-[#ececfc]" : "border-gray-200"}`}
               >
                 <div className="flex items-start">
                   <RadioGroupItem value={index.toString()} id={`option-${index}`} className="mt-1" />
@@ -1068,11 +1068,11 @@ export function AINotificationGenerator({
                     <div className="flex justify-end mt-2">
                       <div className="flex items-center space-x-2 text-sm text-gray-500">
                         <span>Rate this option:</span>
-                        <button className="p-1 hover:bg-pink-100 rounded-full transition-colors">
-                          <ThumbsUp className="h-4 w-4 text-gray-500 hover:text-pink-500" />
+                        <button className="p-1 hover:bg-[#ececfc] rounded-full transition-colors">
+                          <ThumbsUp className="h-4 w-4 text-gray-500 hover:text-[#303293]" />
                         </button>
-                        <button className="p-1 hover:bg-pink-100 rounded-full transition-colors">
-                          <ThumbsDown className="h-4 w-4 text-gray-500 hover:text-pink-500" />
+                        <button className="p-1 hover:bg-[#ececfc] rounded-full transition-colors">
+                          <ThumbsDown className="h-4 w-4 text-gray-500 hover:text-[#303293]" />
                         </button>
                       </div>
                     </div>
@@ -1135,7 +1135,7 @@ export function AINotificationGenerator({
             <Button
               onClick={handleSelectOption}
               disabled={selectedOption === null || isGeneratingVariants}
-              className="bg-pink-600 hover:bg-pink-700"
+              className="bg-[#303293] hover:bg-[#212366]"
             >
               {isGeneratingVariants ? (
                 <>

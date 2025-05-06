@@ -178,7 +178,7 @@ export function IntelligencePanel() {
       <div className="relative w-full max-w-md bg-white shadow-lg flex flex-col h-full overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-semibold flex items-center">
-            <Sparkles className="h-5 w-5 text-yellow-500 mr-2" />
+            <Sparkles className="h-5 w-5 text-[#4346ce] mr-2" />
             OneSignal Intelligence
           </h2>
           <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
@@ -196,7 +196,7 @@ export function IntelligencePanel() {
               >
                 {message.role === "assistant" && (
                   <div className="flex items-center mb-1">
-                    <Sparkles className="h-4 w-4 text-yellow-500 mr-1" />
+                    <Sparkles className="h-4 w-4 text-[#4346ce] mr-1" />
                     <span className="text-xs font-medium">OneSignal Intelligence</span>
                   </div>
                 )}
